@@ -14,7 +14,9 @@ parameters{
 model{
   for(s in 1:S){
     for(a in 1:A){
-      target+= model1_lpmf(pos[s,a]| N[s,a], foi[s], age[s,a]);
+      if(!is_inf(age[s,a])){
+        target+= model1_lpmf(pos[s,a]| N[s,a], foi[s], age[s,a]);
+      }
     }
   }
 }

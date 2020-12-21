@@ -4,8 +4,8 @@ gamma <- c(0.5, 0.25, 0.05)
 n_datasets <- 3
 n_ages <- 5
 
-ages_data <- matrix(c(0.25, 0.5, 2, 4, 5,
-                    0.5, 1, 3, 5, 6,
+ages_data <- matrix(c(0.25, 0.5, 2, 4, Inf,
+                    0.5, 1, 3, 5, Inf,
                     1, 2, 3, 4, 5), ncol = n_ages, nrow = n_datasets, byrow = T)
 N_camels <- matrix(c(1000, 1000, 1000, 1000, 1000,
                    1000, 1000, 1000, 1000, 1000,
