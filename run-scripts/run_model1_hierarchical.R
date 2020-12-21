@@ -7,8 +7,8 @@ n_ages <- 5
 ages_data <- matrix(c(0.25, 0.5, 2, 4, Inf,
                     0.5, 1, 3, 5, Inf,
                     1, 2, 3, 4, 5), ncol = n_ages, nrow = n_datasets, byrow = T)
-N_camels <- matrix(c(1000, 1000, 1000, 1000, 1000,
-                   1000, 1000, 1000, 1000, 1000,
+N_camels <- matrix(c(1000, 1000, 1000, 1000, 0,
+                   1000, 1000, 1000, 1000, 0,
                    1000, 1000, 1000, 1000, 1000), ncol = n_ages, nrow = n_datasets, byrow = T)
 
 pprev <- function(gamma, age) 1 - exp(-gamma*age)
