@@ -32,4 +32,20 @@ return loglik;
     
     return loglik;
     }
+    
+  real model3_lpmf(int seropos,
+                    int N,
+                    int M,
+                    real foi,
+                    real age,
+                    real sigma_m){
+    real pred_prev;
+    real loglik;
+    
+    pred_prev = 1 - exp(-foi*age) - M*((foi/(foi-sigma_m))*(exp(-sigma_m*age) - exp(-foi*age)));
+    
+    loglik = binomial_lpmf(seropos|N, pred_prev);
+    
+    return loglik;
+    }
 }
