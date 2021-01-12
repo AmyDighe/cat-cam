@@ -12,7 +12,7 @@ N_camels <- matrix(c(1000, 1000, 1000, 1000, 0,
                      1000, 1000, 1000, 1000, 0,
                      1000, 1000, 1000, 1000, 1000), ncol = n_ages, nrow = n_datasets, byrow = T)
 
-pprev <- function(gamma, age, sigma_r) (gamma/(gamma+sigma))*(1 - exp(-(gamma + sigma)*age))
+pprev <- function(gamma, age, sigma) (gamma/(gamma+sigma))*(1 - exp(-(gamma + sigma)*age))
 
 pos_data <- matrix(ncol = n_ages, nrow = n_datasets, byrow = T)
 pred_prev <- matrix(ncol = n_ages, nrow = n_datasets, byrow = T)
