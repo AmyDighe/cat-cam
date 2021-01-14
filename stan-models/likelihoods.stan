@@ -35,10 +35,10 @@ return loglik;
     
   real model3_lpmf(int seropos,
                     int N,
-                    int M,
                     real foi,
                     real age,
-                    real sigma_m){
+                    real sigma_m,
+                    real M){
     real pred_prev;
     real loglik;
     

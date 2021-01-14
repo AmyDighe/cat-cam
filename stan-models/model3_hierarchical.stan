@@ -5,7 +5,7 @@ data{
   int N[S,A]; //number of camels tested per age class per study
   int pos[S,A]; //number of seropositive camels per age class per study
   matrix[S,A] age; //average age per age class per study
-  int M[S]; //initial number of baby camels with maternal Abs 
+  real M[S]; //initial proportion of baby camels with maternal Abs 
 }
 
 parameters{
@@ -17,7 +17,7 @@ model{
   for(s in 1:S){
     for(a in 1:A){
       if(!is_inf(age[s,a])){
-        target+= model3_lpmf(pos[s,a]| N[s,a], foi[s], age[s,a], M[s], sigma_m);
+        target+= model3_lpmf(pos[s,a]| N[s,a], foi[s], age[s,a], sigma_m, M[s]);
       }
     }
   }
