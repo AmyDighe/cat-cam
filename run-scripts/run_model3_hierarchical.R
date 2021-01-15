@@ -76,7 +76,8 @@ fit_model3 <- stan(
     N = N_camels,
     pos = pos_data,
     age = ages_data,
-    M = M_initial
+    M = M_initial#,
+    #sigma_m = 2
   ),
   chains = 1,
   iter = 5000,
