@@ -55,10 +55,16 @@ for(s in 1:n_datasets){
   
   for(a in 1:n_ages){
     pred_prev[s,a] <- pprev(gamma = gamma[s], age = ages_data[s,a], omega = omega, M_initial = M_initial[s])
-    #pred_mAb[s,a]<- pmAbs(M_initial = M_initial[s], omega = omega, age = ages_data[s,a])
-    pos_data[s,a] <- rbinom(n = 1, size = N_camels[s,a], prob = pred_prev[s,a])# + pred_mAb[s,a])
+    pred_mAb[s,a]<- pmAbs(M_initial = M_initial[s], omega = omega, age = ages_data[s,a])
+    pos_data[s,a] <- rbinom(n = 1, size = N_camels[s,a], prob = pred_prev[s,a] + pred_mAb[s,a])
   }
 }
+
+# look at the data
+
+pos_data_df <- as.data.frame(pos_data)
+
+
 
 # fit the model to the simulated data
 
@@ -72,7 +78,7 @@ fit_model3 <- stan(
     age = ages_data,
     M = M_initial
   ),
-  chains = 2,
+  chains = 1,
   iter = 5000,
   verbose = TRUE
   ##control = list(adapt_delta = 0.99)

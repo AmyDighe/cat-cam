@@ -40,11 +40,15 @@ return loglik;
                     real sigma_m,
                     real M){
     real pred_prev;
+    real pred_mab;
+    real pred_prev_tot;
     real loglik;
     
     pred_prev = 1 - exp(-foi*age) - M*((foi/(foi-sigma_m))*(exp(-sigma_m*age) - exp(-foi*age)));
-    
-    loglik = binomial_lpmf(seropos|N, pred_prev);
+    pred_mab = M*exp(-sigma_m*age);
+    pred_prev_tot = pred_prev + pred_mab;
+    print(pred_prev_tot);
+    loglik = binomial_lpmf(seropos|N, pred_prev_tot);
     
     return loglik;
     }
