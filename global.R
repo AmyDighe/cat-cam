@@ -3,3 +3,4 @@ options(mc.cores = parallel::detectCores())
 rstan_options(auto_write = TRUE)
 
 library(ggmcmc)
+library(emdbook)
