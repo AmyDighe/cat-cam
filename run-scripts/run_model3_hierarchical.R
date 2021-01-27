@@ -79,8 +79,8 @@ fit_model3 <- stan(
     M = M_initial#,
     #sigma_m = 2
   ),
-  chains = 1,
-  iter = 5000,
+  chains = 2,
+  iter = 4000,
   verbose = TRUE
   ##control = list(adapt_delta = 0.99)
 )
