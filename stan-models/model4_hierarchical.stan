@@ -5,13 +5,15 @@ data{
   int N[S,A]; //number of camels tested per age class per study
   int pos[S,A]; //number of seropositive camels per age class per study
   matrix[S,A] age; //average age per age class per study
-  real M[S]; //initial proportion of baby camels with maternal Abs 
+  real M[S]; //initial proportion of baby camels with maternal Abs
+  real sigma_r;
+  //real sigma_m;
 }
 
 parameters{
   vector<lower = 0, upper = 10>[S] foi; // force of infection parameter per study
-  real<lower = 0> sigma_r; // rate of waning Abs following infection
-  real<lower = 0> sigma_m; // rate of waning maternal Abs
+  //real<lower = 0> sigma_r; // rate of waning Abs following infection
+  real<lower = 0, upper = 20> sigma_m; // rate of waning maternal Abs
 }
 
 model{
