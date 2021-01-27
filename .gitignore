@@ -2,5 +2,6 @@
 .Rhistory
 .RData
 .Ruserdata
-.pdf
+diagnostics/*.pdf
+stan-models/*.rds
 
