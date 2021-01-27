@@ -47,3 +47,93 @@ sim1$pmAbs
 
 sim1$simulated/N_camels
 sim1$pmAbs + sim1$pprev
+
+# run the full model 
+
+
+fit_model4av <- stan(
+  file = here::here("stan-models/model4av_hierarchical.stan"),
+  data = list(
+    S = nrow(sim4$simulated),
+    A =  ncol(sim4$simulated),
+    N = N_camels,
+    pos = sim4$simulated,
+    age1 = age_lower,
+    age2 = age_upper,
+    M = sim4$M_initial
+  ),
+  chains = 2,
+  iter = 4000,
+  verbose = TRUE
+  ##control = list(adapt_delta = 0.99)
+)
+
+
+# run the full model reduced to 3,2,1 on simulated data
+
+# 4 --> 3
+
+fit_4_3 <- stan(
+  file = here::here("stan-models/model4_reduced_3.stan"),
+  data = list(
+    S = nrow(sim3$simulated),
+    A =  ncol(sim3$simulated),
+    N = N_camels,
+    pos = sim3$simulated,
+    age1 = age_lower,
+    age2 = age_upper,
+    M = sim3$M_initial,
+    sigma_r = 0
+  ),
+  chains = 2,
+  iter = 4000,
+  verbose = TRUE
+  ##control = list(adapt_delta = 0.99)
+)
+
+diagnos <- ggmcmc(ggs(fit_4_3), here::here("diagnostics/4_3.pdf"))
+
+# run full model recuded to 2
+
+fit_4_2 <- stan(
+  file = here::here("stan-models/model4_reduced_2.stan"),
+  data = list(
+    S = nrow(sim2$simulated),
+    A =  ncol(sim2$simulated),
+    N = N_camels,
+    pos = sim2$simulated,
+    age1 = age_lower,
+    age2 = age_upper,
+    M = sim2$M_initial,
+    sigma_m = 2
+  ),
+  chains = 2,
+  iter = 4000,
+  verbose = TRUE
+  ##control = list(adapt_delta = 0.99)
+)
+
+diagnos <- ggmcmc(ggs(fit_4_2), here::here("diagnostics/4_2.pdf"))
+
+# run full model reduced to 1
+
+fit_4_1 <- stan(
+  file = here::here("stan-models/model4_reduced_1.stan"),
+  data = list(
+    S = nrow(sim1$simulated),
+    A =  ncol(sim1$simulated),
+    N = N_camels,
+    pos = sim1$simulated,
+    age1 = age_lower,
+    age2 = age_upper,
+    M = sim1$M_initial,
+    sigma_m = 2,
+    sigma_r = 0
+  ),
+  chains = 2,
+  iter = 4000,
+  verbose = TRUE
+  ##control = list(adapt_delta = 0.99)
+)
+
+diagnos <- ggmcmc(ggs(fit_4_1), here::here("diagnostics/4_1.pdf"))
