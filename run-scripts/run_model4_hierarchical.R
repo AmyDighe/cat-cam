@@ -1,4 +1,4 @@
-# run model 2 with seroreversion - hierarchical
+# run model 4 with seroreversion and mAbs - hierarchical
 
 gamma <- c(0.5, 0.25, 0.05)
 omega <- 2 # maternal antibodies wane over 6 months
@@ -79,13 +79,16 @@ fit_model4 <- stan(
     N = N_camels,
     pos = pos_data,
     age = ages_data,
-    M = M_initial
+    M = M_initial,
+    sigma_r = 0.2
   ),
   chains = 2,
-  iter = 10000,
-  verbose = TRUE
-  ##control = list(adapt_delta = 0.99)
+  iter = 2000,
+  verbose = TRUE,
+  seed = 26,
+  control = list(adapt_delta = 0.99)
 )
 
 
-diagnos <- ggmcmc(ggs(fit_model4), here::here("diagnostics/test_hier_model4 .pdf"))
+diagnos <- ggmcmc(ggs(fit_model4), here::here("diagnostics/test_hier_model_fixedsigma_r.pdf"))
+

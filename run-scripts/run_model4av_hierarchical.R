@@ -97,8 +97,8 @@ fit_model4av <- stan(
     age2 = age_upper,
     M = M_initial
   ),
-  chains = 4,
-  iter = 10000,
+  chains = 2,
+  iter = 4000,
   verbose = TRUE
   ##control = list(adapt_delta = 0.99)
 )
