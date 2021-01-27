@@ -75,4 +75,35 @@ return loglik;
     
     return loglik;
     }
+    
+          real model4av_lpmf(int seropos,
+                    int N,
+                    real foi,
+                    real age1,
+                    real age2,
+                    real sigma_r,
+                    real sigma_m,
+                    real M
+                    ){
+                      
+    real pred_prev;
+    real pred_mab;
+    real pred_prev_tot;
+    real loglik;
+    
+    pred_prev = (1/(age2 - age1))*
+    ((foi/(foi + sigma_r))*((age2 - age1) + 
+                               (1/(sigma_r + foi))*(exp(-(foi + sigma_r)*age2) - 
+                                                      exp(-(foi + sigma_r)*age1)))-
+     (M*foi/(foi + sigma_r - sigma_m))*
+       ((1/(foi + sigma_r))*(exp(-(sigma_r + foi)*age2) - exp(-(sigma_r + foi)*age1)) - 
+       (1/sigma_m)*(exp(-sigma_m*age2)- exp(-sigma_m*age1))));
+       
+    pred_mab = 1/(age2 - age1)*((-M/sigma_m)*(exp(-sigma_m*age2) - exp(-sigma_m*age1)));
+    pred_prev_tot = pred_prev + pred_mab;  
+    
+    loglik = binomial_lpmf(seropos|N, pred_prev_tot);
+    
+    return loglik;
+    }
 }
