@@ -1,9 +1,7 @@
-source("utils.R")
-
-
 # define age classes manually 
 # (could just use the ones in the real data?!)
 n_ages <- 5
+n_datasets <- 3
 age_lower <- matrix(c(0, 0.51, 3, 6, 10,
                       0, 1, 3, 4, 10,
                       0.5, 1.5, 2.5, 3.5, 4.5), 
@@ -15,38 +13,37 @@ age_upper <- matrix(c(0.5, 2.99, 5.99, 8, 20,
 
 # define number of camels per age class manually
 # (could just use the ones in the real data?!)
+N_camels <- matrix(c(2000, 2000, 2000, 2000, 0,
+                     2000, 2000, 2000, 2000, 0,
+                     2000, 2000, 2000, 2000, 2000), ncol = n_ages, nrow = n_datasets, byrow = T)
+od <- 0.1
 
-n_datasets <- 3
-N_camels <- matrix(c(1000, 1000, 1000, 1000, 0,
-                     1000, 1000, 1000, 1000, 0,
-                     1000, 1000, 1000, 1000, 1000), ncol = n_ages, nrow = n_datasets, byrow = T)
-
-sim4 <- sim_data(n_datasets, n_ages,
+sim4 <- sim_data_betabinom(n_datasets, n_ages,
          gamma = c(0.5, 0.25, 0.05), sigma = 0.2, omega = 2, mabs = 1,
-         N_camels, age_upper, age_lower)
+         N_camels, age_upper, age_lower, od = od)
 
-sim3 <- sim_data(n_datasets, n_ages,
+sim3 <- sim_data_betabinom(n_datasets, n_ages,
          gamma = c(0.5, 0.25, 0.05), sigma = 0, omega = 2, mabs = 1,
-         N_camels, age_upper, age_lower)
+         N_camels, age_upper, age_lower, od = od)
 
-sim2 <- sim_data(n_datasets, n_ages,
+sim2 <- sim_data_betabinom(n_datasets, n_ages,
          gamma = c(0.5, 0.25, 0.05), sigma = 0.2, omega = 2, mabs = 0,
-         N_camels, age_upper, age_lower)
+         N_camels, age_upper, age_lower, od = od)
 
-sim1 <- sim_data(n_datasets, n_ages,
+sim1 <- sim_data_betabinom(n_datasets, n_ages,
                  gamma = c(0.5, 0.25, 0.05), sigma = 0, omega = 2, mabs = 0,
-                 N_camels, age_upper, age_lower)
+                 N_camels, age_upper, age_lower, od = od)
 
 # checks
 # 1. if mabs = 1 pmAb and M_intial should be non-zero, if mabs = 0, pmab and M_initial should all be zero
 
-sim1$M_initial
-sim1$pmAbs
+sim2$M_initial
+sim2$pmAbs
 
-# 2. these two should be similar for those with >0 in N_camels
+# 2. these two should be similar for those with >0 in N_camels if od is close to zero
 
-sim1$simulated/N_camels
-sim1$pmAbs + sim1$pprev
+sim2$simulated/N_camels
+sim2$pmAbs + sim4$pprev
 
 # run the full model 
 
@@ -86,12 +83,13 @@ fit_4_3 <- stan(
     sigma_r = 0
   ),
   chains = 2,
-  iter = 4000,
-  verbose = TRUE
+  iter = 10000,
+  verbose = TRUE,
+  control = list(max_treedepth = 15)
   ##control = list(adapt_delta = 0.99)
 )
 
-diagnos <- ggmcmc(ggs(fit_4_3), here::here("diagnostics/4_3.pdf"))
+diagnos <- ggmcmc(ggs(fit_4_3), here::here("diagnostics/4_3b.pdf"))
 
 # run full model recuded to 2
 
@@ -107,13 +105,13 @@ fit_4_2 <- stan(
     M = sim2$M_initial,
     sigma_m = 2
   ),
-  chains = 2,
+  chains = 4,
   iter = 4000,
   verbose = TRUE
   ##control = list(adapt_delta = 0.99)
 )
 
-diagnos <- ggmcmc(ggs(fit_4_2), here::here("diagnostics/4_2.pdf"))
+diagnos <- ggmcmc(ggs(fit_4_2), here::here("diagnostics/4_2b.pdf"))
 
 # run full model reduced to 1
 
@@ -136,4 +134,23 @@ fit_4_1 <- stan(
   ##control = list(adapt_delta = 0.99)
 )
 
-diagnos <- ggmcmc(ggs(fit_4_1), here::here("diagnostics/4_1.pdf"))
+diagnos <- ggmcmc(ggs(fit_4_1), here::here("diagnostics/4_1b.pdf"))
+
+
+# plot the data
+
+# merge age with N_camels, N_pos etc
+
+  # 1 convert to long format
+l_pos <- reshape::melt(sim1$simulated)
+l_N_camels <- reshape::melt(N_camels)
+l_age_upper <- reshape::melt(age_upper)
+l_age_lower <- reshape::melt(age_lower)
+l_pprev <- reshape::melt(sim1$pprev)
+l_pmAbs <- reshape::melt(sim1$pmAbs)
+l_ptot <- l_pprev + l_pmAbs
+
+  # 2 stick together by X1 and X2
+
+
+

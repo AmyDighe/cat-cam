@@ -148,10 +148,13 @@ test_reduction_int(foi = 0.5, sigma_r = 0.2, sigma_m = 2, age1 = 1.5, age2 = 2.5
 # simulate data-sets
 # assign prevalence of Abs and mAbs
 
-sim_data <- function (n_datasets, n_ages, gamma, sigma, omega, mabs,
-                      N_camels, age_upper, age_lower, overdisp){
+sim_data_betabinom <- function (n_datasets, n_ages, gamma, sigma, omega, mabs,
+                      N_camels, age_upper, age_lower, od){
   
   M_initial <- vector(length = n_datasets)
+  pred_prev <- matrix(data = NA, nrow = n_datasets, ncol = n_ages, byrow = T)
+  pred_mAb <- matrix(data = NA, nrow = n_datasets, ncol = n_ages, byrow = T)
+  pos_data <- matrix(data = NA, nrow = n_datasets, ncol = n_ages, byrow = T)
 
 for(s in 1:n_datasets){
   
@@ -192,4 +195,51 @@ for(s in 1:n_datasets){
               simulated = pos_data))
 }
 
+
+
+sim_data_binom <- function (n_datasets, n_ages, gamma, sigma, omega, mabs,
+                                N_camels, age_upper, age_lower){
+  
+  M_initial <- vector(length = n_datasets)
+  pred_prev <- matrix(data = NA, nrow = n_datasets, ncol = n_ages, byrow = T)
+  pred_mAb <- matrix(data = NA, nrow = n_datasets, ncol = n_ages, byrow = T)
+  pos_data <- matrix(data = NA, nrow = n_datasets, ncol = n_ages, byrow = T)
+  
+  for(s in 1:n_datasets){
+    
+    if(mabs == 1){
+      
+      M_initial[s] <- pprev4_int(foi = gamma[s],
+                                 age2 = 4.5,
+                                 age1 = 3.5,
+                                 sigma_r = sigma,
+                                 sigma_m = omega,
+                                 M = 0)
+    } else {
+      
+      M_initial[s] <- 0
+    }
+    
+    for(a in 1:n_ages){
+      pred_prev[s,a] <- pprev4_int(foi = gamma[s],
+                                   age2 = age_upper[s,a], 
+                                   age1 = age_lower[s,a],
+                                   sigma_r = sigma, 
+                                   sigma_m = omega, 
+                                   M = M_initial[s])
+      pred_mAb[s,a]<- pmAbs(M = M_initial[s], 
+                            sigma_m = omega, 
+                            age2 = age_upper[s,a], 
+                            age1 = age_lower[s,a])
+      pos_data[s,a] <- rbinom(n = 1, 
+                                  size = N_camels[s,a], 
+                                  prob = pred_prev[s,a] + pred_mAb[s,a])
+    }
+  }
+  
+  return(list(M_initial = M_initial,
+              pmAbs = pred_mAb,
+              pprev = pred_prev,
+              simulated = pos_data))
+}
 
