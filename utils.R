@@ -46,8 +46,8 @@ pprev1_int <- function(foi, age1, age2){
 pprev2_int <- function(foi, sigma_r, age1, age2){
   
 1 / (age2 - age1) * (
-  foi / (foi + sigma) * (
-      age2 - age1 +  1 / (foi + sigma) * (
+  foi / (foi + sigma_r) * (
+      age2 - age1 +  1 / (foi + sigma_r) * (
         exp( - (foi + sigma_r) * age2) - exp( - (foi + sigma_r) * age1)))
      )
 
@@ -149,7 +149,7 @@ test_reduction_int(foi = 0.5, sigma_r = 0.2, sigma_m = 2, age1 = 1.5, age2 = 2.5
 # assign prevalence of Abs and mAbs
 
 sim_data <- function (n_datasets, n_ages, gamma, sigma, omega, mabs,
-                      N_camels, age_upper, age_lower){
+                      N_camels, age_upper, age_lower, overdisp){
   
   M_initial <- vector(length = n_datasets)
 
@@ -179,9 +179,10 @@ for(s in 1:n_datasets){
                           sigma_m = omega, 
                           age2 = age_upper[s,a], 
                           age1 = age_lower[s,a])
-    pos_data[s,a] <- rbinom(n = 1, 
+    pos_data[s,a] <- rbetabinom(n = 1, 
                             size = N_camels[s,a], 
-                            prob = pred_prev[s,a] + pred_mAb[s,a])
+                            prob = pred_prev[s,a] + pred_mAb[s,a],
+                            theta = (1/od)-1)
     }
 }
   
