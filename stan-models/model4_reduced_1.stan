@@ -12,14 +12,17 @@ data{
 }
 
 parameters{
-  vector<lower = 0, upper = 10>[S] foi; // force of infection parameter per study
+  vector <lower = 0, upper = 5>[S] foi; // force of infection parameter per study
+  real <lower = 0, upper = 1> k; // overdispersion
 }
 
 model{
+        k ~ beta(0.75,3); //prior for overdispersion
+        
   for(s in 1:S){
     for(a in 1:A){
       if(!is_inf(age1[s,a])){
-        target+= model4av_lpmf(pos[s,a]| N[s,a], foi[s], age1[s,a], age2[s,a], sigma_r, sigma_m, M[s]);
+        target+= model4av_lpmf(pos[s,a]| N[s,a], foi[s], age1[s,a], age2[s,a], sigma_r, sigma_m, M[s], k);
       }
     }
   }

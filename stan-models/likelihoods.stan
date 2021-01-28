@@ -132,6 +132,35 @@ return loglik;
                     real age2,
                     real sigma_r,
                     real sigma_m,
+                    real M,
+                    real k
+                    ){
+                      
+    real pred_prev;
+    real pred_mab;
+    real pred_prev_tot;
+    real loglik;
+    real alpha;
+    real beta;
+    
+    pred_prev = pprev4_int(foi, sigma_r, sigma_m, M, age1, age2);
+    pred_mab = 1/(age2 - age1)*((-M/sigma_m)*(exp(-sigma_m*age2) - exp(-sigma_m*age1)));
+    pred_prev_tot = pred_prev + pred_mab;  
+    alpha = ((1/k) - 1)* pred_prev_tot;
+    beta = ((1/k) - 1)* (1- pred_prev_tot);
+    
+    loglik = beta_binomial_lpmf(seropos|N, alpha, beta);
+    
+    return loglik;
+    }
+    
+              real model4av_og_lpmf(int seropos,
+                    int N,
+                    real foi,
+                    real age1,
+                    real age2,
+                    real sigma_r,
+                    real sigma_m,
                     real M
                     ){
                       

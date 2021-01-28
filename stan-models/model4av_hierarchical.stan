@@ -7,10 +7,11 @@ data{
   matrix[S,A] age1; //lower bound per age class per study
   matrix[S,A] age2; //upper bound per age class per study
   real M[S]; //initial proportion of baby camels with maternal Abs 
+  vector[S] foi;
 }
 
 parameters{
-  vector<lower = 0, upper = 10>[S] foi; // force of infection parameter per study
+  //vector<lower = 0, upper = 10>[S] foi; // force of infection parameter per study
   real<lower = 0> sigma_r; // rate of waning Abs following infection
   real<lower = 0> sigma_m; // rate of waning maternal Abs
 }
@@ -19,7 +20,7 @@ model{
   for(s in 1:S){
     for(a in 1:A){
       if(!is_inf(age1[s,a])){
-        target+= model4av_lpmf(pos[s,a]| N[s,a], foi[s], age1[s,a], age2[s,a], sigma_r, sigma_m, M[s]);
+        target+= model4av_og_lpmf(pos[s,a]| N[s,a], foi[s], age1[s,a], age2[s,a], sigma_r, sigma_m, M[s]);
       }
     }
   }
