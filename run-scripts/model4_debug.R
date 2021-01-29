@@ -48,7 +48,7 @@ fit_model4av <- stan(
 )
 
 diagnos <- ggmcmc(ggs(fit_model4av), here::here("diagnostics/4_binom.pdf"))
-saveRDS(fit_model4av, file = "fit_mod4_notworking")
+saveRDS(fit_model4av, file = "fit_mod4_notworking.rds")
 fits <- as.data.frame(fit_model4av)
 
 fits[which.max(fits$lp__),]
