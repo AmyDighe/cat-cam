@@ -7,13 +7,14 @@ data{
   matrix[S,A] age1; //lower bound per age class per study
   matrix[S,A] age2; //upper bound per age class per study
   real M[S]; //initial proportion of baby camels with maternal Abs 
-  vector[S] foi;
+  //vector[S] foi;
+  //real sigma_r;
 }
 
 parameters{
-  //vector<lower = 0, upper = 10>[S] foi; // force of infection parameter per study
-  real<lower = 0> sigma_r; // rate of waning Abs following infection
-  real<lower = 0> sigma_m; // rate of waning maternal Abs
+  vector<lower = 0, upper = 10>[S] foi; // force of infection parameter per study
+  real<lower = 0.0001, upper = 10> sigma_r; // rate of waning Abs following infection
+  real<lower = 0.0001, upper = 10> sigma_m; // rate of waning maternal Abs
 }
 
 model{
