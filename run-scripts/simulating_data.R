@@ -37,13 +37,13 @@ sim1 <- sim_data_betabinom(n_datasets, n_ages,
 # checks
 # 1. if mabs = 1 pmAb and M_intial should be non-zero, if mabs = 0, pmab and M_initial should all be zero
 
-sim2$M_initial
-sim2$pmAbs
+sim1$M_initial
+sim1$pmAbs
 
 # 2. these two should be similar for those with >0 in N_camels if od is close to zero
 
-sim2$simulated/N_camels
-sim2$pmAbs + sim4$pprev
+sim1$simulated/N_camels
+sim1$pmAbs + sim4$pprev
 
 # run the full model 
 
@@ -91,7 +91,7 @@ fit_4_3 <- stan(
 
 diagnos <- ggmcmc(ggs(fit_4_3), here::here("diagnostics/4_3b.pdf"))
 
-# run full model recuded to 2
+# run full model reduced to 2
 
 fit_4_2 <- stan(
   file = here::here("stan-models/model4_reduced_2.stan"),
@@ -108,7 +108,7 @@ fit_4_2 <- stan(
   chains = 4,
   iter = 4000,
   verbose = TRUE
-  ##control = list(adapt_delta = 0.99)
+  ##control = list(adapt_delta = 0.99) 
 )
 
 diagnos <- ggmcmc(ggs(fit_4_2), here::here("diagnostics/4_2b.pdf"))
@@ -142,15 +142,30 @@ diagnos <- ggmcmc(ggs(fit_4_1), here::here("diagnostics/4_1b.pdf"))
 # merge age with N_camels, N_pos etc
 
   # 1 convert to long format
-l_pos <- reshape::melt(sim1$simulated)
-l_N_camels <- reshape::melt(N_camels)
-l_age_upper <- reshape::melt(age_upper)
-l_age_lower <- reshape::melt(age_lower)
-l_pprev <- reshape::melt(sim1$pprev)
-l_pmAbs <- reshape::melt(sim1$pmAbs)
-l_ptot <- l_pprev + l_pmAbs
+l_pos <- reshape2::melt(sim1$simulated, value.name = "pos")
+l_N_camels <- reshape2::melt(N_camels, value.name = "N")
+l_age_upper <- reshape2::melt(age_upper, value.name = "age_upper")
+l_age_lower <- reshape2::melt(age_lower, value.name = "age_lower")
+l_pprev <- reshape2::melt(sim1$pprev, value.name = "pprev")
+l_pmAbs <- reshape2::melt(sim1$pmAbs, value.name = "pmAbs") 
 
-  # 2 stick together by X1 and X2
+  # 2 merge them all together
+data1 <- Reduce(merge, list(pos = l_pos,N = l_N_camels, 
+                             age_upper = l_age_upper, age_lower = l_age_lower,
+                             pprev = l_pprev, pmAbs = l_pmAbs))
 
+data1 <- data1 %>%
+  rename(study = Var1, age_class = Var2)%>%
+  mutate(item = seq(1:length(data1$pos)),
+         study = factor(study, levels = c("1", "2", "3")),
+         av_age = age_lower + ((age_upper - age_lower)/2))
 
+data11 <- gather(data1, "bound", "age", 5:6)
 
+ggplot(data = data11, aes(x = age, y = pprev, group = item, colour = study))+
+  geom_line(size = 6, alpha = 0.5)+
+  geom_line(aes(x = av_age, y = pos/N, group = study))+
+  geom_point(aes(x = av_age, y = pos/N, group = study))+
+  xlim(0,10)+
+  ylab("seroprevalence")+
+  theme_minimal()

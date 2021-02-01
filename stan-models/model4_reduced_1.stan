@@ -12,8 +12,8 @@ data{
 }
 
 parameters{
-  vector <lower = 0, upper = 5>[S] foi; // force of infection parameter per study
-  real <lower = 0, upper = 1> k; // overdispersion
+  vector <lower = 0, upper = 10>[S] foi; // force of infection parameter per study
+  real <lower = 0.0001, upper = 0.999> k; // overdispersion
 }
 
 model{
