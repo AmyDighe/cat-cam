@@ -205,7 +205,7 @@ panel <- gridExtra::grid.arrange(arrangeGrob(p0[[1]], p001[[1]],p01[[1]],
 # run full model reduced to 1
 
 fit_4_1 <- stan(
-  file = here::here("stan-models/model4_reduced_1.stan"),
+  file = here::here("stan-models/model4_reduced1bb.stan"),
   data = list(
     S = nrow(simk01[[1]][[1]]$simulated),
     A =  ncol(simk01[[1]][[1]]$simulated),
@@ -252,7 +252,7 @@ ggplot(data = datak01[[1]]%>%dplyr::filter(rep == "pos1"),
 
 
 fit_4_2 <- stan(
-  file = here::here("stan-models/model4_reduced_2.stan"),
+  file = here::here("stan-models/model4_reduced2bb.stan"),
   data = list(
     S = nrow(simk01[[2]][[1]]$simulated),
     A =  ncol(simk01[[2]][[1]]$simulated),

@@ -154,7 +154,7 @@ return loglik;
     return loglik;
     }
     
-              real model4av_og_lpmf(int seropos,
+              real model4av_b_lpmf(int seropos,
                     int N,
                     real foi,
                     real age1,
