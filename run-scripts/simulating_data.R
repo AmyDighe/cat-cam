@@ -49,7 +49,7 @@ sim1$pmAbs + sim4$pprev
 
 
 fit_model4av <- stan(
-  file = here::here("stan-models/model4av_hierarchical.stan"),
+  file = here::here("stan-models/model4bb.stan"),
   data = list(
     S = nrow(sim4$simulated),
     A =  ncol(sim4$simulated),
@@ -71,7 +71,7 @@ fit_model4av <- stan(
 # 4 --> 3
 
 fit_4_3 <- stan(
-  file = here::here("stan-models/model4_reduced_3.stan"),
+  file = here::here("stan-models/model4_reduced3bb.stan"),
   data = list(
     S = nrow(sim3$simulated),
     A =  ncol(sim3$simulated),
@@ -94,7 +94,7 @@ diagnos <- ggmcmc(ggs(fit_4_3), here::here("diagnostics/4_3b.pdf"))
 # run full model reduced to 2
 
 fit_4_2 <- stan(
-  file = here::here("stan-models/model4_reduced_2.stan"),
+  file = here::here("stan-models/model4_reduced2bb.stan"),
   data = list(
     S = nrow(sim2$simulated),
     A =  ncol(sim2$simulated),
@@ -116,7 +116,7 @@ diagnos <- ggmcmc(ggs(fit_4_2), here::here("diagnostics/4_2b.pdf"))
 # run full model reduced to 1
 
 fit_4_1 <- stan(
-  file = here::here("stan-models/model4_reduced_1.stan"),
+  file = here::here("stan-models/model4_reduced1bb.stan"),
   data = list(
     S = nrow(sim1$simulated),
     A =  ncol(sim1$simulated),
