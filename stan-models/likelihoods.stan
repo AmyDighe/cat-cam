@@ -90,14 +90,14 @@ return loglik;
               (age2 - age1) + 1 / (sigma_r + foi) * (
                 exp(-(foi + sigma_r)*age2) - exp(-(foi + sigma_r) * age1)
               )
-            ) -
-           M * foi / (foi + sigma_r - sigma_m) * (
-               1 / (foi + sigma_r) * (
-                exp(-(sigma_r + foi) * age2) - exp(-(sigma_r + foi) * age1)
-              ) - 
-               1 / sigma_m * (exp(-sigma_m * age2)- exp(-sigma_m * age1))
-           )
-        );
+            )); //-
+        // M * foi / (foi + sigma_r - sigma_m) * (
+        //        1 / (foi + sigma_r) * (
+        //         exp(-(sigma_r + foi) * age2) - exp(-(sigma_r + foi) * age1)
+        //       ) - 
+        //        1 / sigma_m * (exp(-sigma_m * age2)- exp(-sigma_m * age1))
+        //    )
+        // ); 
     
     return(pp);
 }

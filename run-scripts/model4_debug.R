@@ -69,3 +69,12 @@ chain1$iteration <- seq(1:length(chain1$sigma_r))
 
 p <- ggplot2::ggplot(chain1, aes(x = iteration, y = lp__))+
   ggplot2::geom_line()
+
+
+
+# when does pprev_int ever equal 0??
+foi_test <- seq(0.000001, 10, by = 0.01)
+for(i in 1:(length(foi_test))){
+  prev <- pprev4_int(foi = foi_test[i], sigma_r = 0, sigma_m = 12, M = 0, age1 = 0, age2 = 0.5)
+  print(paste(prev, foi_test[i], sep = " "))
+}

@@ -1,15 +1,29 @@
 # define age classes manually 
 # (could just use the ones in the real data?!)
 n_ages <- 5
-n_datasets <- 3
-foi <- c(0.5, 0.25, 0.05)
+n_datasets <- 10
+foi <- c(0.5, 0.25, 0.05, 0.75, 1, 0.1, 1.5)
 age_lower <- matrix(c(0, 0.51, 3, 6, 10,
                       0, 1, 3, 4, 10,
-                      0.5, 1.5, 2.5, 3.5, 4.5), 
+                      0.5, 1.5, 2.5, 3.5, 4.5,
+                      0, 0.51, 3, 6, 10,
+                      0, 1, 3, 4, 10,
+                      0, 2,
+                      0, 0.51, 3, 6, 10,
+                      0, 1, 3, 4, 10,
+                      0.5, 1.5, 2.5, 3.5, 4.5,
+                      0, 2), 
                     ncol = n_ages, nrow = n_datasets, byrow = T)
 age_upper <- matrix(c(0.5, 2.99, 5.99, 8, 20,
                       0.99, 2.99, 3.99, 5, 20,
-                      1.49, 2.49, 3.49, 4.49, 5.49),
+                      1.49, 2.49, 3.49, 4.49, 5.49,
+                      0.5, 2.99, 5.99, 8, 20,
+                      0.99, 2.99, 3.99, 5, 20,
+                      1.99, 20,
+                      0.5, 2.99, 5.99, 8, 20,
+                      0.99, 2.99, 3.99, 5, 20,
+                      1.49, 2.49, 3.49, 4.49, 5.49,
+                      1.99, 20),
                     ncol = n_ages, nrow = n_datasets, byrow = T)
 
 # define number of camels per age class manually

@@ -12,7 +12,7 @@ data{
 }
 
 parameters{
-  vector <lower = 0, upper = 10>[S] foi; // force of infection parameter per study
+  vector <lower = 0.00001, upper = 10>[S] foi; // force of infection parameter per study
 }
 
 model{
