@@ -96,6 +96,11 @@ pmAbs <- function(M, sigma_m, age2, age1){
   
 } 
 
+total_pprev4 <- function(foi, sigma_r, sigma_m, M, age1, age2){
+  
+  pprev4_int(foi, sigma_r, sigma_m, M, age1, age2) + pmAbs(M, sigma_m, age2, age1)
+}
+
 # test reduction
 
 test_reduction <- function(foi, sigma_r, sigma_m, age){
@@ -243,3 +248,17 @@ sim_data_binom <- function (n_datasets, n_ages, gamma, sigma, omega, mabs,
               simulated = pos_data))
 }
 
+
+# get CIs of data points
+
+ci_lower <- function(x, n){
+  
+  lower <- binom::binom.confint(x = x, n = n, method = "exact")$lower
+  return(lower)
+}
+
+ci_upper <- function(x, n){
+  
+  upper <- binom::binom.confint(x = x, n = n, method = "exact")$upper
+  return(upper)
+}
