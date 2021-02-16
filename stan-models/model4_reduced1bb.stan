@@ -9,6 +9,8 @@ data{
   real M[S]; //initial proportion of baby camels with maternal Abs 
   real sigma_m;
   real sigma_r;
+  real sens;
+  real spec;
 }
 
 parameters{
@@ -22,7 +24,7 @@ model{
   for(s in 1:S){
     for(a in 1:A){
       if(!is_inf(age1[s,a])){
-        target+= model4av_lpmf(pos[s,a]| N[s,a], foi[s], age1[s,a], age2[s,a], sigma_r, sigma_m, M[s], k);
+        target+= model4av_bb_lpmf(pos[s,a]| N[s,a], foi[s], age1[s,a], age2[s,a], sigma_r, sigma_m, M[s], k, sens, spec);
       }
     }
   }

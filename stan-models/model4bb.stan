@@ -9,6 +9,8 @@ data{
   real M[S]; //initial proportion of baby camels with maternal Abs 
   //vector[S] foi;
   //real sigma_r;
+  real sens;
+  real spec;
 }
 
 parameters{

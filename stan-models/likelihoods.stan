@@ -90,14 +90,14 @@ return loglik;
               (age2 - age1) + 1 / (sigma_r + foi) * (
                 exp(-(foi + sigma_r)*age2) - exp(-(foi + sigma_r) * age1)
               )
-            )); //-
-        // M * foi / (foi + sigma_r - sigma_m) * (
-        //        1 / (foi + sigma_r) * (
-        //         exp(-(sigma_r + foi) * age2) - exp(-(sigma_r + foi) * age1)
-        //       ) - 
-        //        1 / sigma_m * (exp(-sigma_m * age2)- exp(-sigma_m * age1))
-        //    )
-        // ); 
+            ) -
+        M * foi / (foi + sigma_r - sigma_m) * (
+               1 / (foi + sigma_r) * (
+                exp(-(sigma_r + foi) * age2) - exp(-(sigma_r + foi) * age1)
+              ) -
+               1 / sigma_m * (exp(-sigma_m * age2)- exp(-sigma_m * age1))
+           )
+        );
     
     return(pp);
 }
@@ -125,7 +125,7 @@ return loglik;
     return loglik;
     }
     
-          real model4av_lpmf(int seropos,
+          real model4av_bb_lpmf(int seropos,
                     int N,
                     real foi,
                     real age1,
@@ -133,12 +133,15 @@ return loglik;
                     real sigma_r,
                     real sigma_m,
                     real M,
-                    real k
+                    real k,
+                    real sens, 
+                    real spec
                     ){
                       
     real pred_prev;
     real pred_mab;
     real pred_prev_tot;
+    real obs_pred_prev;
     real loglik;
     real alpha;
     real beta;
@@ -146,8 +149,9 @@ return loglik;
     pred_prev = pprev4_int(foi, sigma_r, sigma_m, M, age1, age2);
     pred_mab = 1/(age2 - age1)*((-M/sigma_m)*(exp(-sigma_m*age2) - exp(-sigma_m*age1)));
     pred_prev_tot = pred_prev + pred_mab;  
-    alpha = ((1/k) - 1)* pred_prev_tot;
-    beta = ((1/k) - 1)* (1- pred_prev_tot);
+    obs_pred_prev = sens * pred_prev_tot + (1 - spec) * pred_prev_tot;
+    alpha = ((1/k) - 1)* obs_pred_prev;
+    beta = ((1/k) - 1)* (1 - obs_pred_prev);
     
     loglik = beta_binomial_lpmf(seropos|N, alpha, beta);
     
@@ -161,19 +165,23 @@ return loglik;
                     real age2,
                     real sigma_r,
                     real sigma_m,
-                    real M
+                    real M,
+                    real sens,
+                    real spec
                     ){
                       
     real pred_prev;
     real pred_mab;
     real pred_prev_tot;
+    real obs_pred_prev;
     real loglik;
     
     pred_prev = pprev4_int(foi, sigma_r, sigma_m, M, age1, age2);
     pred_mab = 1/(age2 - age1)*((-M/sigma_m)*(exp(-sigma_m*age2) - exp(-sigma_m*age1)));
     pred_prev_tot = pred_prev + pred_mab;  
+    obs_pred_prev = sens * pred_prev_tot + (1 - spec) * pred_prev_tot;
     
-    loglik = binomial_lpmf(seropos|N, pred_prev_tot);
+    loglik = binomial_lpmf(seropos|N, obs_pred_prev);
     
     return loglik;
     }
