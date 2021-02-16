@@ -56,22 +56,24 @@ datak01 <- list()
 p01 <- list()
 # simulate 3 sets of datasets using each model 1:4, 
 # for 3 different values of overdispersion k
+sens <- 0.9999
+spec <- 1
 
 for(m in 1:4){
   
   simk0[[m]] <- replicate(3, sim_data_binom(n_datasets, n_ages,
                                              gamma = foi, sigma = sigma[m], omega = 2, mabs = mabs[m],
-                                             N_camels, age_upper, age_lower), 
+                                             N_camels, age_upper, age_lower, sens, spec), 
                            simplify = FALSE)
   
   simk001[[m]] <- replicate(3, sim_data_betabinom(n_datasets, n_ages,
                                   gamma = foi, sigma = sigma[m], omega = 2, mabs = mabs[m],
-                                  N_camels, age_upper, age_lower, od = 0.01), 
+                                  N_camels, age_upper, age_lower, od = 0.01, sens, spec), 
             simplify = FALSE)
   
   simk01[[m]]<- replicate(3, sim_data_betabinom(n_datasets, n_ages,
                                                 gamma = foi, sigma = sigma[m], omega = 2, mabs = mabs[m],
-                                                N_camels, age_upper, age_lower, od = 0.1), 
+                                                N_camels, age_upper, age_lower, od = 0.1, sens, spec), 
                           simplify = FALSE)
 }
 

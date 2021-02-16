@@ -78,3 +78,38 @@ for(i in 1:(length(foi_test))){
   prev <- pprev4_int(foi = foi_test[i], sigma_r = 0, sigma_m = 12, M = 0, age1 = 0, age2 = 0.5)
   print(paste(prev, foi_test[i], sep = " "))
 }
+
+
+
+
+
+# what is the support of model 1 and model 3 (e.g when sigma_r = 0)
+
+expose_stan_functions("stan-models/likelihoods.stan")
+
+foi_v <- seq(0.001, 10, by = 0.001)
+pprev <- vector(length = length(foi_v))
+log_lik <- vector(length = length(foi_v))
+
+for(i in 1:length(foi_v)){
+  
+  pprev[i] <- pprev4_int(foi = foi_v[i],
+                         age1 = 10,
+                         age2 = 20,
+                         sigma_r = 0,
+                         sigma_m = 12,
+                         M = 0)
+  
+  log_lik[i] <- model4av_b_lpmf(seropos = 80,
+                                N = 100,
+                                foi = foi_v[i],
+                                age1 = 10,
+                                age2 = 20,
+                                sigma_r = 0,
+                                sigma_m = 12,
+                                M = 0)
+}
+
+
+bug_df <- data.frame(foi_v, pprev, log_lik)
+

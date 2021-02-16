@@ -25,8 +25,8 @@ data_sero <- data_min %>%
 n_datasets <- length(unique(data_sero$STUDY_COUNTRY))
 n_ages <-  max(dplyr::count(data_sero, STUDY, COUNTRY)$n)
 
-AGE_L <- matrix(data = 40, nrow = n_datasets, ncol = n_ages)
-AGE_U <- matrix(data = 50, nrow = n_datasets, ncol = n_ages)
+AGE_L <- matrix(data = 21, nrow = n_datasets, ncol = n_ages)
+AGE_U <- matrix(data = 22, nrow = n_datasets, ncol = n_ages)
 N_CAMELS <- matrix(data = 0, nrow = n_datasets, ncol = n_ages)
 SEROPOS <- matrix(data = 0, nrow = n_datasets, ncol = n_ages)
 row_names <- unique(data_sero$STUDY_COUNTRY)

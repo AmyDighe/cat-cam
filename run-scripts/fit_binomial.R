@@ -1,6 +1,9 @@
 # fit the models to the real data
-init_fun <- function(...) list(foi = c(rep(2.911526, nrow(SEROPOS))))
+#init_fun <- function(...) list(foi = c(rep(2.911526, nrow(SEROPOS))))
 
+data_sero <- readRDS("data/data_sero.rds")
+sens <- 0.9999
+spec = 1
 
 fit_4_1real <- stan(
   file = here::here("stan-models/model4_reduced1b.stan"),
@@ -13,16 +16,18 @@ fit_4_1real <- stan(
     age2 = AGE_U,
     M = M_ZERO_ZERO,
     sigma_m = 12,
-    sigma_r = 0
+    sigma_r = 0,
+    sens = sens,
+    spec = spec
   ),
   chains = 1,
   iter = 4000,
-  verbose = TRUE,
-  init = init_fun
+  verbose = TRUE#,
+  ##init = init_fun
   ##control = list(adapt_delta = 0.99)
 )
 
-rstan::summary(fit_4_1real)
+fit1_summary <- rstan::summary(fit_4_1real)
 diagnos <- ggmcmc(ggs(fit_4_1real), here::here("diagnostics/real4_1b.pdf"))
 
 
@@ -36,7 +41,9 @@ fit_4_2real <- stan(
     age1 = AGE_L,
     age2 = AGE_U,
     M = M_ZERO_ZERO,
-    sigma_m = 12
+    sigma_m = 12,
+    sens = sens,
+    spec = spec
   ),
   chains = 4,
   iter = 4000,
@@ -57,7 +64,9 @@ fit_4_3real <- stan(
     age1 = AGE_L,
     age2 = AGE_U,
     M = M_ZERO,
-    sigma_r = 0.00001
+    sigma_r = 0,
+    sens = sens,
+    spec = spec
   ),
   chains = 4,
   iter = 4000,
@@ -66,9 +75,9 @@ fit_4_3real <- stan(
   ##control = list(adapt_delta = 0.99)
 )
 
-rstan::summary(fit_4_3real)
+fit3_summary <- rstan::summary(fit_4_3real)
 
-fit_4real <- stan(
+ fit_4real <- stan(
   file = here::here("stan-models/model4b.stan"),
   data = list(
     S = nrow(SEROPOS),
@@ -77,7 +86,9 @@ fit_4real <- stan(
     pos = SEROPOS,
     age1 = AGE_L,
     age2 = AGE_U,
-    M = M_ZERO
+    M = M_ZERO,
+    sens = sens,
+    spec = spec
   ),
   chains = 4,
   iter = 4000,
@@ -88,6 +99,10 @@ fit_4real <- stan(
 fit4_summary <- rstan::summary(fit_4real)
 diagnos <- ggmcmc(ggs(fit_4real), here::here("diagnostics/real4b.pdf"))
 
+saveRDS(fit_4_1real, "fits/fit_4_1real.rds")
+saveRDS(fit_4_1real, "fits/fit_4_2real.rds")
+saveRDS(fit_4_1real, "fits/fit_4_3real.rds")
+saveRDS(fit_4_1real, "fits/fit_4real.rds")
 
 # run full model reduced to 1
 
@@ -117,6 +132,8 @@ fit_4_1 <- stan(
 
 rstan::summary(fit_4_1)
 get_inits(fit_4_1)
+
+
 
 
 fit_4_2 <- stan(
