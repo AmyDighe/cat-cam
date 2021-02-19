@@ -2,38 +2,46 @@
 # (could just use the ones in the real data?!)
 n_ages <- 5
 n_datasets <- 10
-foi <- c(0.5, 0.25, 0.05, 0.75, 1, 0.1, 1.5)
+foi <- c(0.5, 0.25, 0.05, 0.75, 1, 0.1, 1.5, 2, 0.2, 0.6)
 age_lower <- matrix(c(0, 0.51, 3, 6, 10,
                       0, 1, 3, 4, 10,
                       0.5, 1.5, 2.5, 3.5, 4.5,
                       0, 0.51, 3, 6, 10,
                       0, 1, 3, 4, 10,
-                      0, 2,
+                      0, 2, 10, 10, 10,
                       0, 0.51, 3, 6, 10,
                       0, 1, 3, 4, 10,
                       0.5, 1.5, 2.5, 3.5, 4.5,
-                      0, 2), 
+                      0, 2, 10, 10, 10), 
                     ncol = n_ages, nrow = n_datasets, byrow = T)
 age_upper <- matrix(c(0.5, 2.99, 5.99, 8, 20,
                       0.99, 2.99, 3.99, 5, 20,
                       1.49, 2.49, 3.49, 4.49, 5.49,
                       0.5, 2.99, 5.99, 8, 20,
                       0.99, 2.99, 3.99, 5, 20,
-                      1.99, 20,
+                      1.99, 10, 20, 20, 20,
                       0.5, 2.99, 5.99, 8, 20,
                       0.99, 2.99, 3.99, 5, 20,
                       1.49, 2.49, 3.49, 4.49, 5.49,
-                      1.99, 20),
+                      1.99, 10, 20, 20, 20),
                     ncol = n_ages, nrow = n_datasets, byrow = T)
 
 # define number of camels per age class manually
 # (could just use the ones in the real data?!)
 N_camels <- matrix(c(2000, 2000, 2000, 2000, 0,
                      2000, 2000, 2000, 2000, 0,
-                     2000, 2000, 2000, 2000, 2000), ncol = n_ages, nrow = n_datasets, byrow = T)
+                     2000, 2000, 2000, 2000, 2000,
+                     2000, 2000, 2000, 2000, 0,
+                     2000, 2000, 2000, 2000, 0,
+                     2000, 2000, 0, 0, 0,
+                     2000, 2000, 2000, 2000, 0,
+                     2000, 2000, 2000, 2000, 0,
+                     2000, 2000, 2000, 2000, 2000,
+                     2000, 2000, 0, 0, 0), ncol = n_ages, nrow = n_datasets, byrow = T)
 
 # define pars necessary to reduce model 4 --> 1, 2, 3
 sigma <- c(0, 0.2, 0, 0.2)
+omega <- 2.1
 mabs <- c(0, 0, 1, 1)
 
 simk0 <- list()
@@ -56,23 +64,23 @@ datak01 <- list()
 p01 <- list()
 # simulate 3 sets of datasets using each model 1:4, 
 # for 3 different values of overdispersion k
-sens <- 0.9999
+sens <- 0.99
 spec <- 1
 
 for(m in 1:4){
   
   simk0[[m]] <- replicate(3, sim_data_binom(n_datasets, n_ages,
-                                             gamma = foi, sigma = sigma[m], omega = 2, mabs = mabs[m],
+                                             gamma = foi, sigma = sigma[m], omega = omega, mabs = mabs[m],
                                              N_camels, age_upper, age_lower, sens, spec), 
                            simplify = FALSE)
   
   simk001[[m]] <- replicate(3, sim_data_betabinom(n_datasets, n_ages,
-                                  gamma = foi, sigma = sigma[m], omega = 2, mabs = mabs[m],
+                                  gamma = foi, sigma = sigma[m], omega = omega, mabs = mabs[m],
                                   N_camels, age_upper, age_lower, od = 0.01, sens, spec), 
             simplify = FALSE)
   
   simk01[[m]]<- replicate(3, sim_data_betabinom(n_datasets, n_ages,
-                                                gamma = foi, sigma = sigma[m], omega = 2, mabs = mabs[m],
+                                                gamma = foi, sigma = sigma[m], omega = omega, mabs = mabs[m],
                                                 N_camels, age_upper, age_lower, od = 0.1, sens, spec), 
                           simplify = FALSE)
 }
@@ -111,14 +119,14 @@ for(m in 1:4){
   datak0[[m]] <- datak0[[m]]%>%
     rename(study = Var1, age_class = Var2)%>%
     mutate(pprevtot = pprev + pmAbs,
-           study = factor(study, levels = c("1", "2", "3")),
+           study = factor(study, levels = as.character(seq(1, n_datasets, by = 1))),
            av_age = age_lower + ((age_upper - age_lower)/2))
   
   datak0[[m]] <- gather(datak0[[m]], "rep", "pos", 6:8) 
 
   datak0[[m]] <- datak0[[m]]%>%
     mutate(
-      item = seq(1:45))
+      item = seq(1:(dim(datak0[[m]])[1])))
   datak0[[m]] <- gather(datak0[[m]], "bound", "age", 4:5)
 
   p0[[m]] <- ggplot(data = datak0[[m]], aes(x = age, y = pprevtot, group = item, colour = study))+
@@ -142,14 +150,14 @@ for(m in 1:4){
   datak001[[m]] <- datak001[[m]]%>%
     rename(study = Var1, age_class = Var2)%>%
     mutate(pprevtot = pprev + pmAbs,
-           study = factor(study, levels = c("1", "2", "3")),
+           study = factor(study, levels = as.character(seq(1, n_datasets, by = 1))),
            av_age = age_lower + ((age_upper - age_lower)/2))
   
   datak001[[m]] <- gather(datak001[[m]], "rep", "pos", 6:8) 
   
   datak001[[m]] <- datak001[[m]]%>%
     mutate(
-      item = seq(1:45))
+      item = seq(1:(dim(datak001[[m]])[1])))
   datak001[[m]] <- gather(datak001[[m]], "bound", "age", 4:5)
   
   p001[[m]] <- ggplot(data = datak001[[m]], aes(x = age, y = pprevtot, group = item, colour = study))+
@@ -173,14 +181,14 @@ for(m in 1:4){
   datak01[[m]] <- datak01[[m]]%>%
     rename(study = Var1, age_class = Var2)%>%
     mutate(pprevtot = pprev + pmAbs,
-           study = factor(study, levels = c("1", "2", "3")),
+           study = factor(study, levels = as.character(seq(1, n_datasets, by = 1))),
            av_age = age_lower + ((age_upper - age_lower)/2))
   
   datak01[[m]] <- gather(datak01[[m]], "rep", "pos", 6:8) 
   
   datak01[[m]] <- datak01[[m]]%>%
     mutate(
-      item = seq(1:45))
+      item = seq(1:(dim(datak01[[m]])[1])))
   datak01[[m]] <- gather(datak01[[m]], "bound", "age", 4:5)
   
   p01[[m]] <- ggplot(data = datak01[[m]], aes(x = age, y = pprevtot, group = item, colour = study))+
@@ -221,17 +229,19 @@ panel <- gridExtra::grid.arrange(arrangeGrob(p0[[1]], p001[[1]],p01[[1]],
 # run full model reduced to 1
 
 fit_4_1 <- stan(
-  file = here::here("stan-models/model4_reduced1bb.stan"),
+  file = here::here("stan-models/model4_reduced1b.stan"),
   data = list(
-    S = nrow(simk01[[1]][[1]]$simulated),
-    A =  ncol(simk01[[1]][[1]]$simulated),
+    S = nrow(simk0[[1]][[1]]$simulated),
+    A =  ncol(simk0[[1]][[1]]$simulated),
     N = N_camels,
-    pos = simk01[[1]][[1]]$simulated,
+    pos = simk0[[1]][[1]]$simulated,
     age1 = age_lower,
     age2 = age_upper,
-    M = simk01[[1]][[1]]$M_initial,
-    sigma_m = 2,
-    sigma_r = 0
+    sigma_m = omega,
+    sigma_r = 0,
+    sens = 0.999,
+    spec = 1,
+    mabs = 0
   ),
   chains = 4,
   iter = 4000,
@@ -245,10 +255,12 @@ fits1[which.max(fits1$lp__),]
 sumfit <- rstan::summary(fit_4_1)
 sumfit$c_summary
 
-fits1_long <- reshape2::melt(fits1[,1:4])
+fits1_long <- reshape2::melt(fits1[,1:10])
 
-true1 <- data.frame(variable = as.factor(c("foi[1]", "foi[2]", "foi[3]", "k")), 
-                    true = c(0.5, 0.25, 0.05, 0.1))
+true1 <- data.frame(variable = as.factor(c("foi[1]", "foi[2]", "foi[3]", "foi[4]",
+                                           "foi[5]", "foi[6]", "foi[7]", "foi[8]",
+                                           "foi[9]", "foi[10]")), 
+                    true = foi)
 
 ggplot()+
   geom_histogram(data = fits1_long, aes(x = value), binwidth = 0.01)+
@@ -256,7 +268,7 @@ ggplot()+
   geom_vline(data = true1, aes(xintercept = true1$true))
 diagnos <- ggmcmc(ggs(fit_4_1), here::here("diagnostics/4_1b.pdf"))
 
-ggplot(data = datak01[[1]]%>%dplyr::filter(rep == "pos1"), 
+ggplot(data = datak0[[1]]%>%dplyr::filter(rep == "pos1"), 
        aes(x = age, y = pprevtot, group = item, colour = study))+
   geom_line(size = 2, alpha = 0.5)+
   geom_line(aes(x = av_age, y = pos/N, group = interaction(study, rep), colour = study))+
@@ -268,16 +280,18 @@ ggplot(data = datak01[[1]]%>%dplyr::filter(rep == "pos1"),
 
 
 fit_4_2 <- stan(
-  file = here::here("stan-models/model4_reduced2bb.stan"),
+  file = here::here("stan-models/model4_reduced2b.stan"),
   data = list(
-    S = nrow(simk01[[2]][[1]]$simulated),
-    A =  ncol(simk01[[2]][[1]]$simulated),
+    S = nrow(simk0[[2]][[1]]$simulated),
+    A =  ncol(simk0[[2]][[1]]$simulated),
     N = N_camels,
-    pos = simk01[[2]][[1]]$simulated,
+    pos = simk0[[2]][[1]]$simulated,
     age1 = age_lower,
     age2 = age_upper,
-    M = simk01[[2]][[1]]$M_initial,
-    sigma_m = 2
+    sigma_m = 2,
+    sens = 0.999,
+    spec = 1,
+    mabs = 0
   ),
   chains = 4,
   iter = 4000,

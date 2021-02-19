@@ -165,19 +165,25 @@ return loglik;
                     real age2,
                     real sigma_r,
                     real sigma_m,
-                    real M,
                     real sens,
-                    real spec
+                    real spec,
+                    int mabs
                     ){
                       
+    real Mzero;
     real pred_prev;
     real pred_mab;
     real pred_prev_tot;
     real obs_pred_prev;
     real loglik;
     
-    pred_prev = pprev4_int(foi, sigma_r, sigma_m, M, age1, age2);
-    pred_mab = 1/(age2 - age1)*((-M/sigma_m)*(exp(-sigma_m*age2) - exp(-sigma_m*age1)));
+    if(mabs == 1){
+      Mzero = pprev4_int(foi, sigma_r, sigma_m, 0, 4, 10);
+    } else {
+      Mzero = 0;
+    }
+    pred_prev = pprev4_int(foi, sigma_r, sigma_m, Mzero, age1, age2);
+    pred_mab = 1/(age2 - age1)*((-Mzero/sigma_m)*(exp(-sigma_m*age2) - exp(-sigma_m*age1)));
     pred_prev_tot = pred_prev + pred_mab;  
     obs_pred_prev = sens * pred_prev_tot + (1 - spec) * pred_prev_tot;
     

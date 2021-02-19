@@ -96,9 +96,10 @@ pmAbs <- function(M, sigma_m, age2, age1){
   
 } 
 
-total_pprev4 <- function(foi, sigma_r, sigma_m, M, age1, age2){
+total_pprev4 <- function(foi, sigma_r, sigma_m, M, age1, age2, sens, spec){
   
-  pprev4_int(foi, sigma_r, sigma_m, M, age1, age2) + pmAbs(M, sigma_m, age2, age1)
+ total_true <- pprev4_int(foi, sigma_r, sigma_m, M, age1, age2) + pmAbs(M, sigma_m, age2, age1)
+ total_obs <- sens*total_true + (1 - spec)*total_true
 }
 
 # test reduction
@@ -160,17 +161,21 @@ sim_data_betabinom <- function (n_datasets, n_ages, gamma, sigma, omega, mabs,
   pred_prev <- matrix(data = NA, nrow = n_datasets, ncol = n_ages, byrow = T)
   pred_mAb <- matrix(data = NA, nrow = n_datasets, ncol = n_ages, byrow = T)
   pos_data <- matrix(data = NA, nrow = n_datasets, ncol = n_ages, byrow = T)
+  obs_pprev <- matrix(data = NA, nrow = n_datasets, ncol = n_ages, byrow = T)
 
 for(s in 1:n_datasets){
   
   if(mabs == 1){
     
-    M_initial[s] <- pprev4_int(foi = gamma[s],
-                               age2 = 4.5,
-                               age1 = 3.5,
+    M_initial[s] <-total_pprev4(foi = gamma[s],
+                               age2 = 10,
+                               age1 = 4,
                                sigma_r = sigma,
                                sigma_m = omega,
-                               M = 0)
+                               M = 0,
+                               sens = sens,
+                               spec = spec) 
+    
   } else {
     
     M_initial[s] <- 0
@@ -212,17 +217,20 @@ sim_data_binom <- function (n_datasets, n_ages, gamma, sigma, omega, mabs,
   pred_prev <- matrix(data = NA, nrow = n_datasets, ncol = n_ages, byrow = T)
   pred_mAb <- matrix(data = NA, nrow = n_datasets, ncol = n_ages, byrow = T)
   pos_data <- matrix(data = NA, nrow = n_datasets, ncol = n_ages, byrow = T)
+  obs_pprev <- matrix(data = NA, nrow = n_datasets, ncol = n_ages, byrow = T)
   
   for(s in 1:n_datasets){
     
     if(mabs == 1){
       
-      M_initial[s] <- pprev4_int(foi = gamma[s],
-                                 age2 = 4.5,
-                                 age1 = 3.5,
+      M_initial[s] <- total_pprev4(foi = gamma[s],
+                                 age2 = 10,
+                                 age1 = 4,
                                  sigma_r = sigma,
                                  sigma_m = omega,
-                                 M = 0)
+                                 M = 0,
+                                 sens = sens,
+                                 spec = spec)
     } else {
       
       M_initial[s] <- 0
