@@ -4,4 +4,7 @@
 .Ruserdata
 diagnostics/*.pdf
 stan-models/*.rds
+data/
+figs/
+fits/
 
