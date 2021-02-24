@@ -20,6 +20,8 @@ datak01 <- readRDS("data/sim_datak01")
 simk0 <- readRDS("data/sim_matk0") #contain STUDY X AGE matrices for fit
 simk001 <- readRDS("data/sim_matk001")
 simk01 <- readRDS("data/sim_matk01")
+sens <- 0.9999
+spec <- 1
 
 # real data
 data_sero <- readRDS("data/data_sero.rds") # contain data frames for plotting
@@ -27,5 +29,3 @@ SEROPOS <- readRDS("data/SEROPOS.rds") #contain STUDY X AGE matrices for fit
 AGE_L <- readRDS("data/AGE_L.rds")
 AGE_U <- readRDS("data/AGE_U.rds")
 N_CAMELS <- readRDS("data/N_CAMELS.rds")
-sens <- 0.9999
-spec <- 1
