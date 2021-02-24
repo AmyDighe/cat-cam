@@ -6,10 +6,9 @@ data{
   int pos[S,A]; //number of seropositive camels per age class per study
   matrix[S,A] age1; //lower bound per age class per study
   matrix[S,A] age2; //upper bound per age class per study
-  //vector[S] foi;
-  //real sigma_r;
-  real sens;
-  real spec;
+  real sens; //sensitivity of Antibody test
+  real spec; // specificity of Antibody test
+  real mabs;
 }
 
 parameters{
@@ -22,7 +21,7 @@ model{
   for(s in 1:S){
     for(a in 1:A){
       if(!is_inf(age1[s,a])){
-        target+= model4av_b_lpmf(pos[s,a]| N[s,a], foi[s], age1[s,a], age2[s,a], sigma_r, sigma_m, sens, spec);
+        target+= model4av_b_lpmf(pos[s,a]| N[s,a], foi[s], age1[s,a], age2[s,a], sigma_r, sigma_m, sens, spec, mabs);
       }
     }
   }

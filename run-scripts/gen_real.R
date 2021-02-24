@@ -7,7 +7,7 @@ data_raw <- read.csv("data/all_rna_and_serol_new.csv")
 
 data_min <- data_raw%>%
   dplyr::select(STUDY, COUNTRY, LOW_AGE, UPP_AGE, RNA_POS,
-                RNA_N, SERO_POS, SERO_N, M_ZERO, TEST_TYPE,
+                RNA_N, SERO_POS, SERO_N, TEST_TYPE,
                 SAMPLE)
 
 # filter only those studies which have serology data
@@ -70,9 +70,9 @@ SEROPOS[study_country[s], names(c_s_spos)] <- c_s_spos
 
 }
 
-M_ZERO <- unique(data_sero$M_ZERO)/100
-
-M_ZERO_ZERO <- rep(0, length(M_ZERO))
+# M_ZERO <- unique(data_sero$M_ZERO)/100
+# 
+# M_ZERO_ZERO <- rep(0, length(M_ZERO))
 
   # add seroprevalnce and ci
 
@@ -87,3 +87,7 @@ data_sero$ci_upp <- apply(data_sero[,c("SERO_POS", "SERO_N")], 1,
                           function(x) ci_upper(x[1], x[2]))
 
 saveRDS(data_sero, file = "data/data_sero.rds")
+saveRDS(SEROPOS, file = "data/SEROPOS.rds")
+saveRDS(AGE_L, file = "data/AGE_L.rds")
+saveRDS(AGE_U, file = "data/AGE_U.rds")
+saveRDS(N_CAMELS, file = "data/N_CAMELS.rds")

@@ -1,9 +1,9 @@
 # fit the models to the real data
 #init_fun <- function(...) list(foi = c(rep(2.911526, nrow(SEROPOS))))
 
-data_sero <- readRDS("data/data_sero.rds")
-sens <- 0.9999
-spec = 1
+#############
+# BINOMIAL ##
+#############
 
 fit_4_1real <- stan(
   file = here::here("stan-models/model4_reduced1b.stan"),
@@ -14,13 +14,13 @@ fit_4_1real <- stan(
     pos = SEROPOS,
     age1 = AGE_L,
     age2 = AGE_U,
-    M = M_ZERO_ZERO,
     sigma_m = 12,
     sigma_r = 0,
     sens = sens,
-    spec = spec
+    spec = spec,
+    mabs = -1
   ),
-  chains = 1,
+  chains = 4,
   iter = 4000,
   verbose = TRUE#,
   ##init = init_fun
@@ -40,10 +40,10 @@ fit_4_2real <- stan(
     pos = SEROPOS,
     age1 = AGE_L,
     age2 = AGE_U,
-    M = M_ZERO_ZERO,
     sigma_m = 12,
     sens = sens,
-    spec = spec
+    spec = spec,
+    mabs = -1
   ),
   chains = 4,
   iter = 4000,
@@ -63,10 +63,10 @@ fit_4_3real <- stan(
     pos = SEROPOS,
     age1 = AGE_L,
     age2 = AGE_U,
-    M = M_ZERO,
     sigma_r = 0,
     sens = sens,
-    spec = spec
+    spec = spec,
+    mabs = 1
   ),
   chains = 4,
   iter = 4000,
@@ -75,7 +75,8 @@ fit_4_3real <- stan(
   ##control = list(adapt_delta = 0.99)
 )
 
-fit3_summary <- rstan::summary(fit_4_3real)
+ fit3_summary <- rstan::summary(fit_4_3real)
+diagnos <- ggmcmc(ggs(fit_4_3real), here::here("diagnostics/4_3breal.pdf"))
 
  fit_4real <- stan(
   file = here::here("stan-models/model4b.stan"),
@@ -86,9 +87,9 @@ fit3_summary <- rstan::summary(fit_4_3real)
     pos = SEROPOS,
     age1 = AGE_L,
     age2 = AGE_U,
-    M = M_ZERO,
     sens = sens,
-    spec = spec
+    spec = spec,
+    mabs = 1
   ),
   chains = 4,
   iter = 4000,
@@ -100,53 +101,54 @@ fit4_summary <- rstan::summary(fit_4real)
 diagnos <- ggmcmc(ggs(fit_4real), here::here("diagnostics/real4b.pdf"))
 
 saveRDS(fit_4_1real, "fits/fit_4_1real.rds")
-saveRDS(fit_4_1real, "fits/fit_4_2real.rds")
-saveRDS(fit_4_1real, "fits/fit_4_3real.rds")
-saveRDS(fit_4_1real, "fits/fit_4real.rds")
+saveRDS(fit_4_2real, "fits/fit_4_2real.rds")
+saveRDS(fit_4_3real, "fits/fit_4_3real.rds")
+saveRDS(fit_4real, "fits/fit_4real.rds")
 
-# run full model reduced to 1
 
-# test on sim
+##################
+## BETABINOMIAL ##
+##################
 
-init_fun <- function(...) list(foi = c(rep(2.911526, n_datasets)))
-
-fit_4_1 <- stan(
-  file = here::here("stan-models/model4_reduced1b.stan"),
+fit_4_1bbreal <- stan(
+  file = here::here("stan-models/model4_reduced1bb.stan"),
   data = list(
-    S = nrow(simk0[[1]][[1]]$simulated),
-    A =  ncol(simk0[[1]][[1]]$simulated),
-    N = N_camels,
-    pos = simk0[[1]][[1]]$simulated,
-    age1 = age_lower,
-    age2 = age_upper,
-    M = simk0[[1]][[1]]$M_initial,
-    sigma_m = 12, #set it greater than max foi to avoid lack of support
-    sigma_r = 0
+    S = nrow(SEROPOS),
+    A =  ncol(SEROPOS),
+    N = N_CAMELS,
+    pos = SEROPOS,
+    age1 = AGE_L,
+    age2 = AGE_U,
+    sigma_m = 12,
+    sigma_r = 0,
+    sens = sens,
+    spec = spec,
+    mabs = -1
   ),
   chains = 4,
   iter = 4000,
-  verbose = TRUE,
-  init = init_fun
+  verbose = TRUE#,
+  ##init = init_fun
   ##control = list(adapt_delta = 0.99)
 )
 
-rstan::summary(fit_4_1)
-get_inits(fit_4_1)
+fit1_summary <- rstan::summary(fit_4_1bbreal)
+diagnos <- ggmcmc(ggs(fit_4_1bbreal), here::here("diagnostics/real4_1b.pdf"))
 
 
-
-
-fit_4_2 <- stan(
-  file = here::here("stan-models/model4_reduced2b.stan"),
+fit_4_2bbreal <- stan(
+  file = here::here("stan-models/model4_reduced2bb.stan"),
   data = list(
-    S = nrow(simk0[[2]][[1]]$simulated),
-    A =  ncol(simk0[[2]][[1]]$simulated),
-    N = N_camels,
-    pos = simk0[[2]][[1]]$simulated,
-    age1 = age_lower,
-    age2 = age_upper,
-    M = simk0[[2]][[1]]$M_initial,
-    sigma_m = 12
+    S = nrow(SEROPOS),
+    A =  ncol(SEROPOS),
+    N = N_CAMELS,
+    pos = SEROPOS,
+    age1 = AGE_L,
+    age2 = AGE_U,
+    sigma_m = 12,
+    sens = sens,
+    spec = spec,
+    mabs = -1
   ),
   chains = 4,
   iter = 4000,
@@ -154,18 +156,22 @@ fit_4_2 <- stan(
   ##control = list(adapt_delta = 0.99) 
 )
 
+fit2_summary <- rstan::summary(fit_4_2bbreal)
+diagnos <- ggmcmc(ggs(fit_4_2bbreal), here::here("diagnostics/real4_2bb.pdf"))
 
-fit_4_3 <- stan(
-  file = here::here("stan-models/model4_reduced3b.stan"),
+fit_4_3bbreal <- stan(
+  file = here::here("stan-models/model4_reduced3bb.stan"),
   data = list(
-    S = nrow(simk0[[3]][[1]]$simulated),
-    A =  ncol(simk0[[3]][[1]]$simulated),
-    N = N_camels,
-    pos = simk0[[3]][[1]]$simulated,
-    age1 = age_lower,
-    age2 = age_upper,
-    M = simk0[[3]][[1]]$M_initial,
-    sigma_r = 0
+    S = nrow(SEROPOS),
+    A =  ncol(SEROPOS),
+    N = N_CAMELS,
+    pos = SEROPOS,
+    age1 = AGE_L,
+    age2 = AGE_U,
+    sigma_r = 0,
+    sens = sens,
+    spec = spec,
+    mabs = 1
   ),
   chains = 4,
   iter = 4000,
@@ -174,18 +180,21 @@ fit_4_3 <- stan(
   ##control = list(adapt_delta = 0.99)
 )
 
-rstan::summary(fit_model4av)
+fit3_summary <- rstan::summary(fit_4_3bbreal)
+diagnos <- ggmcmc(ggs(fit_4_3bbreal), here::here("diagnostics/4_3bbreal.pdf"))
 
-fit_model4av <- stan(
-  file = here::here("stan-models/model4b.stan"),
+fit_4bbreal <- stan(
+  file = here::here("stan-models/model4bb.stan"),
   data = list(
-    S = nrow(simk0[[4]][[1]]$simulated),
-    A =  ncol(simk0[[4]][[1]]$simulated),
-    N = N_camels,
-    pos = simk0[[4]][[1]]$simulated,
-    age1 = age_lower,
-    age2 = age_upper,
-    M = simk0[[4]][[1]]$M_initial
+    S = nrow(SEROPOS),
+    A =  ncol(SEROPOS),
+    N = N_CAMELS,
+    pos = SEROPOS,
+    age1 = AGE_L,
+    age2 = AGE_U,
+    sens = sens,
+    spec = spec,
+    mabs = 1
   ),
   chains = 4,
   iter = 4000,
@@ -193,7 +202,10 @@ fit_model4av <- stan(
   ##control = list(adapt_delta = 0.99)
 )
 
-rstan::summary(fit_model4av)
+fit4_summary <- rstan::summary(fit_4bbreal)
+diagnos <- ggmcmc(ggs(fit_4bbreal), here::here("diagnostics/real4bb.pdf"))
 
-saveRDS(fit_4_2real, file = "fits/fit_4_2real.rds")
-saveRDS(fit_4real, file = "fits/fit_4real.rds")
+saveRDS(fit_4_1bbreal, "fits/fit_4_1bbreal.rds")
+saveRDS(fit_4_2bbreal, "fits/fit_4_2bbreal.rds")
+saveRDS(fit_4_3bbreal, "fits/fit_4_3bbreal.rds")
+saveRDS(fit_4bbreal, "fits/fit_4bbreal.rds")
