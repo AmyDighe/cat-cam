@@ -279,8 +279,7 @@ fit_4_2bb1 <- stan(
     sigma_m = 2.1,
     sens = 0.999,
     spec = 1,
-    mabs = -1,
-    k = 0.1
+    mabs = -1
   ),
   chains = 4,
   iter = 4000,

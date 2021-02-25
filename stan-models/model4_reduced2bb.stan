@@ -14,7 +14,7 @@ data{
 
 parameters{
   vector<lower = 0, upper = 10>[S] foi; // force of infection parameter per study
-  real<lower = 0, upper = 5> sigma_r; // rate of waning maternal Abs
+  real<lower = 0, upper = 1> sigma_r; // rate of waning maternal Abs
   real <lower = 0.0001, upper = 0.999> k; // overdispersion
 }
 
