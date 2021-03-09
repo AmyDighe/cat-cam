@@ -99,7 +99,7 @@ pmAbs <- function(M, sigma_m, age2, age1){
 total_pprev4 <- function(foi, sigma_r, sigma_m, M, age1, age2, sens, spec){
   
  total_true <- pprev4_int(foi, sigma_r, sigma_m, M, age1, age2) + pmAbs(M, sigma_m, age2, age1)
- total_obs <- sens*total_true + (1 - spec)*total_true
+ total_obs <- sens * total_true + (1 - spec) * total_true
 }
 
 # test reduction
@@ -282,6 +282,7 @@ ci_upper <- function(x, n){
 ## PLOTTING ##
 ##############
 
+
 plot_fit_sim <- function(fits, data, mabs, sr, sens, spec){
   
   n_datasets <- length(unique(data$STUDY_COUNTRY))
@@ -299,14 +300,17 @@ plot_fit_sim <- function(fits, data, mabs, sr, sens, spec){
   
   data_fit <- merge(foi_df, data) 
   
+  data_fit$sens <- sens[data_fit$STUDY_COUNTRY]
+  data_fit$spec <- spec[data_fit$STUDY_COUNTRY]
+  
   if(mabs == 1){
-    data_fit$m_zero <- apply(X = data_fit["mean"], MARGIN = 1, 
+    data_fit$m_zero <- apply(X = data_fit[, c("mean", "sens", "spec")], MARGIN = 1, 
                              FUN = function(x){ total_pprev4(foi = x[1],
                                                              sigma_r = sigma_r,
-                                                             sigma_m = 12, M = 0, 
+                                                             sigma_m = 2.1, M = 0, 
                                                              age1 = 4, 
                                                              age2 = 10, 
-                                                             sens, spec)})
+                                                             sens = x[2], spec = x[3])})
     sigma_m <- fit["sigma_m", "mean"]
     
   } else {
@@ -315,20 +319,20 @@ plot_fit_sim <- function(fits, data, mabs, sr, sens, spec){
   }
   
   
-  data_fit$pprev <- apply(X = data_fit[, c("LOW_AGE", "UPP_AGE", "mean", "m_zero")], MARGIN = 1,
+  data_fit$pprev <- apply(X = data_fit[, c("LOW_AGE", "UPP_AGE", "mean", "m_zero", "sens", "spec")], MARGIN = 1,
                           FUN = function(x){total_pprev4(age1 = x[1], age2 = x[2], 
                                                          foi = x[3], sigma_r =  sigma_r,
-                                                         M = x[4], sigma_m = sigma_m, sens = sens, spec = spec)})
+                                                         M = x[4], sigma_m = sigma_m, sens = x[5], spec = x[6])})
   
-  data_fit$pprev_cilow <- apply(X = data_fit[, c("LOW_AGE", "UPP_AGE", "2.5%", "m_zero")], MARGIN = 1,
+  data_fit$pprev_cilow <- apply(X = data_fit[, c("LOW_AGE", "UPP_AGE", "2.5%", "m_zero", "sens", "spec")], MARGIN = 1,
                                 FUN = function(x){total_pprev4(age1 = x[1], age2 = x[2], 
                                                                foi = x[3], sigma_r =  sigma_r,
-                                                               M = x[4], sigma_m = sigma_m, sens = sens, spec = spec)})
+                                                               M = x[4], sigma_m = sigma_m, sens = x[5], spec = x[6])})
   
-  data_fit$pprev_ciupp <- apply(X = data_fit[, c("LOW_AGE", "UPP_AGE", "97.5%", "m_zero")], MARGIN = 1,
+  data_fit$pprev_ciupp <- apply(X = data_fit[, c("LOW_AGE", "UPP_AGE", "97.5%", "m_zero", "sens", "spec")], MARGIN = 1,
                                 FUN = function(x){total_pprev4(age1 = x[1], age2 = x[2], 
                                                                foi = x[3], sigma_r =  sigma_r,
-                                                               M = x[4], sigma_m = sigma_m, sens = sens, spec = spec)})
+                                                               M = x[4], sigma_m = sigma_m, sens = x[5], spec = x[6])})
   
   data_fit <- data_fit%>%
     mutate(
@@ -341,34 +345,36 @@ plot_fit_sim <- function(fits, data, mabs, sr, sens, spec){
   foi_mean <- rep(unique(data_fit$mean), each = length(ages))
   foi_low <- rep(unique(data_fit$"2.5%"), each = length(ages))
   foi_high <- rep(unique(data_fit$"97.5%"), each = length(ages))
-  cont_pred <- data.frame(ages, STUDY_COUNTRY, foi_mean, foi_low, foi_high)
+  sens <- rep(sens, each = length(ages))
+  spec <- rep(spec, each = length(ages))
+  cont_pred <- data.frame(ages, STUDY_COUNTRY, foi_mean, foi_low, foi_high, sens, spec)
   
   if(mabs == 1){
-    cont_pred$m_zero <- apply(X = cont_pred["foi_mean"], MARGIN = 1, 
+    cont_pred$m_zero <- apply(X = cont_pred[, c("foi_mean", "sens", "spec")], MARGIN = 1, 
                               FUN = function(x){ total_pprev4(age1 = 4, 
                                                             age2 = 10, foi = x[1],
                                                             sigma_r = sigma_r,
-                                                            M = 0, sigma_m = 12, sens, spec)})
+                                                            M = 0, sigma_m = 12, sens = x[2], spec = x[3])})
   } else{
     cont_pred$m_zero = 0
   }
   
-  cont_pred$pprev_mean <- apply(X = cont_pred[,c("ages", "foi_mean", "m_zero")], MARGIN = 1, 
+  cont_pred$pprev_mean <- apply(X = cont_pred[,c("ages", "foi_mean", "m_zero", "sens", "spec")], MARGIN = 1, 
                                 FUN = function(x){ total_pprev4(age1 = x[1] -0.01, 
                                                               age2 = x[1] + 0.01, foi = x[2],
                                                               sigma_r = sigma_r,
-                                                              M = x[3], sigma_m = sigma_m, sens, spec)})
-  cont_pred$pprev_low <- apply(X = cont_pred[,c("ages", "foi_low", "m_zero")], MARGIN = 1, 
+                                                              M = x[3], sigma_m = sigma_m, sens = x[4], spec = x[5])})
+  cont_pred$pprev_low <- apply(X = cont_pred[,c("ages", "foi_low", "m_zero", "sens", "spec")], MARGIN = 1, 
                                FUN = function(x){ total_pprev4(age1 = x[1] -0.01, 
                                                              age2 = x[1] + 0.01, foi = x[2],
                                                              sigma_r = sigma_r,
-                                                             M = x[3], sigma_m = sigma_m, sens, spec)})
-  cont_pred$pprev_high <- apply(X = cont_pred[,c("ages", "foi_high", "m_zero")], MARGIN = 1, 
+                                                             M = x[3], sigma_m = sigma_m, sens = x[4], spec = x[5])})
+  cont_pred$pprev_high <- apply(X = cont_pred[,c("ages", "foi_high", "m_zero", "sens", "spec")], MARGIN = 1, 
                                 FUN = function(x){ total_pprev4(age1 = x[1] -0.01, 
                                                               age2 = x[1] + 0.01, foi = x[2],
                                                               sigma_r = sigma_r,
                                                               M = x[3], sigma_m = sigma_m,
-                                                              sens, spec)})
+                                                              sens = x[4], spec = x[5])})
   
   # PLOT
   p <- ggplot(data = data_fit, aes(y = seroprevalence, x = AGE_MID))+
@@ -387,6 +393,17 @@ plot_fit_sim <- function(fits, data, mabs, sr, sens, spec){
 }
 
 
+
+# test debugging
+
+fits <- fit_4_1real
+data <- datak0[[3]]%>% dplyr::filter(rep == "pos1")
+data <- data_sero
+mabs <- 0
+sr <- 0
+sens <- sens
+spec <- spec
+
 plot_fit_real <- function(fits, data, mabs, sr, sens, spec){
   
   n_datasets <- length(unique(data$STUDY_COUNTRY))
@@ -404,14 +421,17 @@ plot_fit_real <- function(fits, data, mabs, sr, sens, spec){
   
   data_fit <- merge(foi_df, data) 
   
+  data_fit$sens <- sens[data_fit$STUDY_COUNTRY]
+  data_fit$spec <- spec[data_fit$STUDY_COUNTRY]
+  
   if(mabs == 1){
-    data_fit$m_zero <- apply(X = data_fit["mean"], MARGIN = 1, 
+    data_fit$m_zero <- apply(X = data_fit[,c("mean", "sens", "spec")], MARGIN = 1, 
                              FUN = function(x){ total_pprev4(foi = x[1],
                                                              sigma_r = sigma_r,
                                                              sigma_m = 12, M = 0, 
                                                              age1 = 4, 
                                                              age2 = 10, 
-                                                             sens, spec)})
+                                                             sens = x[2], spec= x[3])})
     sigma_m <- fit["sigma_m", "mean"]
     
   } else {
@@ -420,20 +440,20 @@ plot_fit_real <- function(fits, data, mabs, sr, sens, spec){
   }
   
   
-  data_fit$pprev <- apply(X = data_fit[, c("LOW_AGE", "UPP_AGE", "mean", "m_zero")], MARGIN = 1,
+  data_fit$pprev <- apply(X = data_fit[, c("LOW_AGE", "UPP_AGE", "mean", "m_zero", "sens", "spec")], MARGIN = 1,
                           FUN = function(x){total_pprev4(age1 = x[1], age2 = x[2], 
                                                          foi = x[3], sigma_r =  sigma_r,
-                                                         M = x[4], sigma_m = sigma_m, sens = sens, spec = spec)})
+                                                         M = x[4], sigma_m = sigma_m, sens = x[5], spec = x[6])})
   
-  data_fit$pprev_cilow <- apply(X = data_fit[, c("LOW_AGE", "UPP_AGE", "2.5%", "m_zero")], MARGIN = 1,
+  data_fit$pprev_cilow <- apply(X = data_fit[, c("LOW_AGE", "UPP_AGE", "2.5%", "m_zero", "sens", "spec")], MARGIN = 1,
                                 FUN = function(x){total_pprev4(age1 = x[1], age2 = x[2], 
                                                                foi = x[3], sigma_r =  sigma_r,
-                                                               M = x[4], sigma_m = sigma_m, sens = sens, spec = spec)})
+                                                               M = x[4], sigma_m = sigma_m, sens = x[5], spec = x[6])})
   
-  data_fit$pprev_ciupp <- apply(X = data_fit[, c("LOW_AGE", "UPP_AGE", "97.5%", "m_zero")], MARGIN = 1,
+  data_fit$pprev_ciupp <- apply(X = data_fit[, c("LOW_AGE", "UPP_AGE", "97.5%", "m_zero", "sens", "spec")], MARGIN = 1,
                                 FUN = function(x){total_pprev4(age1 = x[1], age2 = x[2], 
                                                                foi = x[3], sigma_r =  sigma_r,
-                                                               M = x[4], sigma_m = sigma_m, sens = sens, spec = spec)})
+                                                               M = x[4], sigma_m = sigma_m, sens = x[5], spec = x[6])})
   
   data_fit <- data_fit%>%
     mutate(
@@ -446,34 +466,36 @@ plot_fit_real <- function(fits, data, mabs, sr, sens, spec){
   foi_mean <- rep(unique(data_fit$mean), each = length(ages))
   foi_low <- rep(unique(data_fit$"2.5%"), each = length(ages))
   foi_high <- rep(unique(data_fit$"97.5%"), each = length(ages))
-  cont_pred <- data.frame(ages, STUDY_COUNTRY, foi_mean, foi_low, foi_high)
+  sens <- rep(sens, each = length(ages))
+  spec <- rep(spec, each = length(ages))
+  cont_pred <- data.frame(ages, STUDY_COUNTRY, foi_mean, foi_low, foi_high, sens, spec)
   
   if(mabs == 1){
-    cont_pred$m_zero <- apply(X = cont_pred["foi_mean"], MARGIN = 1, 
+    cont_pred$m_zero <- apply(X = cont_pred[,c("foi_mean", "sens", "spec")], MARGIN = 1, 
                               FUN = function(x){ total_pprev4(age1 = 4, 
                                                               age2 = 10, foi = x[1],
                                                               sigma_r = sigma_r,
-                                                              M = 0, sigma_m = 12, sens, spec)})
+                                                              M = 0, sigma_m = 12, sens = x[2], spec = x[3])})
   } else{
     cont_pred$m_zero = 0
   }
   
-  cont_pred$pprev_mean <- apply(X = cont_pred[,c("ages", "foi_mean", "m_zero")], MARGIN = 1, 
+  cont_pred$pprev_mean <- apply(X = cont_pred[,c("ages", "foi_mean", "m_zero", "sens", "spec")], MARGIN = 1, 
                                 FUN = function(x){ total_pprev4(age1 = x[1] -0.01, 
                                                                 age2 = x[1] + 0.01, foi = x[2],
                                                                 sigma_r = sigma_r,
-                                                                M = x[3], sigma_m = sigma_m, sens, spec)})
-  cont_pred$pprev_low <- apply(X = cont_pred[,c("ages", "foi_low", "m_zero")], MARGIN = 1, 
+                                                                M = x[3], sigma_m = sigma_m, sens = x[4], spec = x[5])})
+  cont_pred$pprev_low <- apply(X = cont_pred[,c("ages", "foi_low", "m_zero", "sens", "spec")], MARGIN = 1, 
                                FUN = function(x){ total_pprev4(age1 = x[1] -0.01, 
                                                                age2 = x[1] + 0.01, foi = x[2],
                                                                sigma_r = sigma_r,
-                                                               M = x[3], sigma_m = sigma_m, sens, spec)})
-  cont_pred$pprev_high <- apply(X = cont_pred[,c("ages", "foi_high", "m_zero")], MARGIN = 1, 
+                                                               M = x[3], sigma_m = sigma_m, sens = x[4], spec = x[5])})
+  cont_pred$pprev_high <- apply(X = cont_pred[,c("ages", "foi_high", "m_zero", "sens", "spec")], MARGIN = 1, 
                                 FUN = function(x){ total_pprev4(age1 = x[1] -0.01, 
                                                                 age2 = x[1] + 0.01, foi = x[2],
                                                                 sigma_r = sigma_r,
                                                                 M = x[3], sigma_m = sigma_m,
-                                                                sens, spec)})
+                                                                sens = x[4], spec = x[5])})
   
   # PLOT
   p <- ggplot(data = data_fit, aes(y = seroprevalence, x = AGE_MID))+

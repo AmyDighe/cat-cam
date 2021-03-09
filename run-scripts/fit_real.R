@@ -1,6 +1,33 @@
 # fit the models to the real data
 #init_fun <- function(...) list(foi = c(rep(2.911526, nrow(SEROPOS))))
 
+#################
+## SENS & SPEC ##
+#################
+
+TEST_TYPES <- unique(STUDY_TEST_TYPE$TEST_TYPE) #read in from global
+
+sens_ppNT <- default_sens
+sens_MN <- default_sens
+sens_PM <- default_sens
+sens_ELISA <- default_sens
+sens_ELISA_MN <- sens_ELISA * sens_MN
+
+spec_ppNT <- default_spec 
+spec_MN <- default_spec 
+spec_PM <- default_spec 
+spec_ELISA <- default_spec 
+spec_ELISA_MN <- spec_ELISA + spec_MN - (spec_ELISA * spec_MN)
+
+test_sens_spec <- data.frame(TEST_TYPE = TEST_TYPES, SENS = c(sens_ppNT, sens_MN, sens_PM, sens_ELISA, sens_ELISA_MN),
+                             SPEC = c(spec_ppNT, spec_MN, spec_PM, spec_ELISA, spec_ELISA_MN))
+STUDY_TEST_TYPE$id <- 1:nrow(STUDY_TEST_TYPE)
+STUDY_TEST_TYPE <- merge(STUDY_TEST_TYPE, test_sens_spec)
+STUDY_TEST_TYPE <- STUDY_TEST_TYPE[order(STUDY_TEST_TYPE$id),]
+
+sens <- STUDY_TEST_TYPE$SENS
+spec <- STUDY_TEST_TYPE$SPEC
+
 #############
 # BINOMIAL ##
 #############
@@ -28,7 +55,7 @@ fit_4_1real <- stan(
 )
 
 fit1_summary <- rstan::summary(fit_4_1real)
-diagnos <- ggmcmc(ggs(fit_4_1real), here::here("diagnostics/real4_1b.pdf"))
+diagnos <- ggmcmc(ggs(fit_4_1real), here::here("diagnostics/real4_1btest.pdf"))
 
 
 fit_4_2real <- stan(
@@ -52,7 +79,7 @@ fit_4_2real <- stan(
 )
 
 fit2_summary <- rstan::summary(fit_4_2real)
- diagnos <- ggmcmc(ggs(fit_4_2real), here::here("diagnostics/real4_2b.pdf"))
+diagnos <- ggmcmc(ggs(fit_4_2real), here::here("diagnostics/real4_2b.pdf"))
 
 fit_4_3real <- stan(
   file = here::here("stan-models/model4_reduced3b.stan"),
@@ -133,7 +160,7 @@ fit_4_1bbreal <- stan(
 )
 
 fit1_summary <- rstan::summary(fit_4_1bbreal)
-diagnos <- ggmcmc(ggs(fit_4_1bbreal), here::here("diagnostics/real4_1b.pdf"))
+diagnos <- ggmcmc(ggs(fit_4_1bbreal), here::here("diagnostics/real4_1bb.pdf"))
 
 
 fit_4_2bbreal <- stan(
@@ -181,7 +208,7 @@ fit_4_3bbreal <- stan(
 )
 
 fit3_summary <- rstan::summary(fit_4_3bbreal)
-diagnos <- ggmcmc(ggs(fit_4_3bbreal), here::here("diagnostics/4_3bbreal.pdf"))
+diagnos <- ggmcmc(ggs(fit_4_3bbreal), here::here("diagnostics/real4_3bb.pdf"))
 
 fit_4bbreal <- stan(
   file = here::here("stan-models/model4bb.stan"),
@@ -209,3 +236,5 @@ saveRDS(fit_4_1bbreal, "fits/fit_4_1bbreal.rds")
 saveRDS(fit_4_2bbreal, "fits/fit_4_2bbreal.rds")
 saveRDS(fit_4_3bbreal, "fits/fit_4_3bbreal.rds")
 saveRDS(fit_4bbreal, "fits/fit_4bbreal.rds")
+
+fit_4_3bbreal <- readRDS("fits/fit_4_3bbreal.rds")

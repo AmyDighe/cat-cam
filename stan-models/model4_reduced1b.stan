@@ -8,8 +8,8 @@ data{
   matrix[S,A] age2; //upper bound per age class per study
   real sigma_m;
   real sigma_r;
-  real sens;
-  real spec;
+  real sens[S];
+  real spec[S];
   int mabs;
 }
 
@@ -17,13 +17,23 @@ parameters{
   vector <lower = 0.00001, upper = 10>[S] foi; // force of infection parameter per study
 }
 
+
 model{
-        
   for(s in 1:S){
     for(a in 1:A){
-      if(!is_inf(age1[s,a])){
-        target+= model4av_b_lpmf(pos[s,a]| N[s,a], foi[s], age1[s,a], age2[s,a], sigma_r, sigma_m, sens, spec, mabs);
-      }
+        target+= model4av_b_lpmf(pos[s,a]| N[s,a], foi[s], age1[s,a], age2[s,a], sigma_r, sigma_m, sens[s], spec[s], mabs);
+    }
+  }
+}
+
+generated quantities{
+  matrix <lower = 0, upper = 100> [S,A] seroprevalence;
+  matrix[S,A] log_lik;
+
+  for(s in 1:S){
+    for(a in 1:A){
+      seroprevalence[s,a] = seroprev(foi[s], sigma_r, sigma_m, mabs, age1[s,a], age2[s,a], sens[s], spec[s]);
+      log_lik[s,a] = model4av_b_lpmf(pos[s,a]| N[s,a], foi[s], age1[s,a], age2[s,a], sigma_r, sigma_m, sens[s], spec[s], mabs);
     }
   }
 }

@@ -41,6 +41,12 @@ N_CAMELS <- matrix(c(2000, 2000, 2000, 2000, 0,
                      2000, 2000, 2000, 2000, 2000,
                      2000, 2000, 0, 0, 0), ncol = n_ages, nrow = n_datasets, byrow = T)
 
+sens <- rep(default_sens, n_datasets)
+spec <- rep(default_spec, n_datasets)
+
+names(sens) <- as.character(1:10)
+names(spec) <- names(sens)
+
 ##############
 ## BINOMIAL ##
 ##############
@@ -58,8 +64,8 @@ fit_4_1 <- stan(
     age2 = UPP_AGE,
     sigma_m = 2.1,
     sigma_r = 0,
-    sens = 0.999,
-    spec = 1,
+    sens = sens,
+    spec = spec,
     mabs = -1
   ),
   chains = 4,
@@ -79,8 +85,8 @@ fit_4_2 <- stan(
     age1 = LOW_AGE,
     age2 = UPP_AGE,
     sigma_m = 2.1,
-    sens = 0.999,
-    spec = 1,
+    sens = sens,
+    spec = spec,
     mabs = -1
   ),
   chains = 4,
@@ -153,8 +159,8 @@ fit_4_1bb <- stan(
     age2 = UPP_AGE,
     sigma_m = 2.1,
     sigma_r = 0,
-    sens = 0.999,
-    spec = 1,
+    sens = sens,
+    spec = spec,
     mabs = -1
   ),
   chains = 4,
@@ -175,8 +181,8 @@ fit_4_2bb <- stan(
     age1 = LOW_AGE,
     age2 = UPP_AGE,
     sigma_m = 2.1,
-    sens = 0.999,
-    spec = 1,
+    sens = sens,
+    spec = spec,
     mabs = -1
   ),
   chains = 4,
@@ -255,8 +261,8 @@ fit_4_1bb1 <- stan(
     age2 = UPP_AGE,
     sigma_m = 2.1,
     sigma_r = 0,
-    sens = 0.999,
-    spec = 1,
+    sens = sens,
+    spec = spec,
     mabs = -1
   ),
   chains = 4,
@@ -277,8 +283,8 @@ fit_4_2bb1 <- stan(
     age1 = LOW_AGE,
     age2 = UPP_AGE,
     sigma_m = 2.1,
-    sens = 0.999,
-    spec = 1,
+    sens = sens,
+    spec = spec,
     mabs = -1
   ),
   chains = 4,

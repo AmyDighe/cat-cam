@@ -67,8 +67,8 @@ datak01L <- list()
 datak001L <- list()
 # simulate 3 sets of datasets using each model 1:4, 
 # for 3 different values of overdispersion k
-sens <- 0.99
-spec <- 1
+sens <- default_sens
+spec <- default_spec
 
 for(m in 1:4){
   

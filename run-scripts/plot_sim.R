@@ -16,6 +16,13 @@ fit_4_2bb1 <- readRDS("fits/fit_4_2bb1.rds")
 fit_4_3bb1 <- readRDS("fits/fit_4_3bb1.rds")
 fit_4bb1 <- readRDS("fits/fit_4bb1.rds")
 
+sens <- rep(default_sens, n_datasets)
+spec <- rep(default_spec, n_datasets)
+
+names(sens) <- as.character(1:10)
+names(spec) <- names(sens)
+
+
 ############
 # model 1b #
 ############

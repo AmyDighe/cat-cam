@@ -1,6 +1,10 @@
 
 n_datasets <- length(unique(data_sero$STUDY_COUNTRY))
 data <- data_sero
+sens <- STUDY_TEST_TYPE$SENS
+spec <- STUDY_TEST_TYPE$SPEC
+names(sens) <- unique(data_sero$STUDY_COUNTRY)
+names(spec) <- names(sens)
 
 ############
 # model 1b #

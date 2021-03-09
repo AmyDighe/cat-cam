@@ -86,8 +86,12 @@ data_sero$ci_low <- apply(data_sero[,c("SERO_POS", "SERO_N")], 1,
 data_sero$ci_upp <- apply(data_sero[,c("SERO_POS", "SERO_N")], 1, 
                           function(x) ci_upper(x[1], x[2]))
 
+## to enable study specific sensitivity and specificity
+STUDY_TEST_TYPE <- unique(data_sero %>% dplyr::select(STUDY_COUNTRY, TEST_TYPE))
+
 saveRDS(data_sero, file = "data/data_sero.rds")
 saveRDS(SEROPOS, file = "data/SEROPOS.rds")
 saveRDS(AGE_L, file = "data/AGE_L.rds")
 saveRDS(AGE_U, file = "data/AGE_U.rds")
-saveRDS(N_CAMELS, file = "data/N_CAMELS.rds")
+saveRDS(N_CAMELS, file = "data/N_CAMELS.rds") 
+saveRDS(STUDY_TEST_TYPE, file = "data/STUDY_TEST_TYPE.rds")
