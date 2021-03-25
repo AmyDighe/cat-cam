@@ -28,12 +28,16 @@ model{
 
 generated quantities{
   matrix <lower = 0, upper = 100> [S,A] seroprevalence;
-  matrix[S,A] log_lik;
+  vector[S*A] log_lik;
+  int x;
+  
+  x = 1;
 
   for(s in 1:S){
     for(a in 1:A){
       seroprevalence[s,a] = seroprev(foi[s], sigma_r, sigma_m, mabs, age1[s,a], age2[s,a], sens[s], spec[s]);
-      log_lik[s,a] = model4av_b_lpmf(pos[s,a]| N[s,a], foi[s], age1[s,a], age2[s,a], sigma_r, sigma_m, sens[s], spec[s], mabs);
+      log_lik[x] = model4av_b_lpmf(pos[s,a]| N[s,a], foi[s], age1[s,a], age2[s,a], sigma_r, sigma_m, sens[s], spec[s], mabs);
+    x = x + 1;
     }
   }
 }
