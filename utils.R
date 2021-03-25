@@ -393,17 +393,6 @@ plot_fit_sim <- function(fits, data, mabs, sr, sens, spec){
 }
 
 
-
-# test debugging
-
-fits <- fit_4_1real
-data <- datak0[[3]]%>% dplyr::filter(rep == "pos1")
-data <- data_sero
-mabs <- 0
-sr <- 0
-sens <- sens
-spec <- spec
-
 plot_fit_real <- function(fits, data, mabs, sr, sens, spec){
   
   n_datasets <- length(unique(data$STUDY_COUNTRY))
@@ -511,4 +500,308 @@ plot_fit_real <- function(fits, data, mabs, sr, sens, spec){
     theme_minimal()
   
   print(p)
+}
+
+
+plot_sim_gq <- function(data, fit, mabs, sr){
+  
+  # order data to enable merge
+  data <- data[order(as.numeric(as.character(data$STUDY_COUNTRY))),]
+  n_datasets <- length(unique(data$STUDY_COUNTRY))
+  study_country <- factor(as.character(1:n_datasets), levels = as.character(1:n_datasets))
+  
+  summary_fit <- rstan::summary(fit)$summary
+  ppd <- as.data.frame(summary_fit[grep("seroprevalence", rownames(summary_fit)),])
+  
+  ppd$STUDY_COUNTRY <- data$STUDY_COUNTRY #only works because of ordering
+  ppd$age_class <- data$age_class #only works because pre-filter
+  
+  # merge fits and data
+  ppd <- merge(ppd, data)
+  ppd <- ppd %>% 
+    rename(low_sero = "2.5%", high_sero = "97.5%")%>%
+    dplyr::filter(SERO_N>0) %>%
+    mutate(DATA_SERO = pos/SERO_N)
+  
+  # calculate ci for the data
+  ppd$DATA_ci_low <- apply(ppd[,c("pos", "SERO_N")], 1, 
+                            function(x) ci_lower(x[1], x[2]))
+  ppd$DATA_ci_upp <- apply(ppd[,c("pos", "SERO_N")], 1, 
+                            function(x) ci_upper(x[1], x[2]))
+  
+  # get continuous predicted prev
+  foi_df <- as.data.frame(summary_fit[grep("foi", rownames(summary_fit)),])
+  ages <- seq(0.01,20, by = 0.1)
+  STUDY_COUNTRY <- rep(unique(data$STUDY_COUNTRY), each = length(ages))
+  foi_mean <- rep(unique(foi_df$mean), each = length(ages))
+  sens <- rep(sens, each = length(ages))
+  spec <- rep(spec, each = length(ages))
+  cont_pred <- data.frame(ages = rep(ages, n_datasets), STUDY_COUNTRY, foi_mean, sens, spec)
+  
+  if(sr == 1){
+    sigma_r <- summary_fit["sigma_r", "mean"]
+  } else{
+    sigma_r <- 0
+  }
+  
+  if(mabs == 1){
+    cont_pred$m_zero <- apply(X = cont_pred[,c("foi_mean", "sens", "spec")], MARGIN = 1, 
+                              FUN = function(x){ total_pprev4(age1 = 4, 
+                                                              age2 = 10, foi = x[1],
+                                                              sigma_r = sigma_r,
+                                                              M = 0, sigma_m = 12, sens = x[2], spec = x[3])})
+    sigma_m <- fit["sigma_m", "mean"]
+    
+     } else{
+    cont_pred$m_zero = 0
+    sigma_m <- 12
+  }
+  
+  cont_pred$pprev_mean <- apply(X = cont_pred[,c("ages", "foi_mean", "m_zero", "sens", "spec")], MARGIN = 1, 
+                                FUN = function(x){ total_pprev4(age1 = x[1] -0.01, 
+                                                                age2 = x[1] + 0.01, foi = x[2],
+                                                                sigma_r = sigma_r,
+                                                                M = x[3], sigma_m = sigma_m, sens = x[4], spec = x[5])})
+  
+  
+  # plot
+  p <- ggplot(data = ppd, aes(x = AGE_MID, y = mean))+
+    geom_errorbar(aes(ymin = low_sero, ymax = high_sero), col = "blue", alpha = 0.4)+
+    geom_point(alpha = 0.4, col = "blue")+
+    geom_point(aes(y = DATA_SERO), col = "red", alpha = 0.4)+
+    geom_errorbar(aes(ymin = DATA_ci_low, ymax = DATA_ci_upp), col = "red", alpha = 0.4)+
+    geom_line(data = cont_pred, aes(x = ages, y = pprev_mean), col = "lightblue")+
+    facet_wrap(~STUDY_COUNTRY)+
+    theme_minimal()
+  
+  print(p)
+}
+
+plot_real_gq <- function(data, fit, mabs, sr){
+  
+  n_datasets <- length(unique(data$STUDY_COUNTRY))
+  summary_fit <- rstan::summary(fit)$summary
+  fit <- as.data.frame((rstan::summary(fit))$summary)
+  
+  ppd <- as.data.frame(summary_fit[grep("seroprevalence", rownames(summary_fit)),])
+  ppd$N <- as.vector(t(N_CAMELS))
+  ppd <- ppd %>%
+    dplyr::filter(N>0)
+  ppd$STUDY_COUNTRY <- data$STUDY_COUNTRY #only works because of filter
+  ppd$AGE_MID <- data$AGE_MID 
+  
+  # merge fits and data
+  ppd <- merge(ppd, data)
+  ppd <- ppd %>% 
+    rename(low_sero = "2.5%", high_sero = "97.5%")
+  
+  # get continuous predicted prev
+  ages <- seq(0.01,20, by = 0.1)
+  foi_df <- as.data.frame(summary_fit[grep("foi", rownames(summary_fit)),])
+  foi_mean <- rep(unique(foi_df$mean), each = length(ages))
+  sens <- rep(sens, each = length(ages))
+  spec <- rep(spec, each = length(ages))
+  STUDY_COUNTRY <- rep(unique(data$STUDY_COUNTRY), each = length(ages))
+  cont_pred <- data.frame(ages = rep(ages, n_datasets), STUDY_COUNTRY, foi_mean, sens, spec)
+  
+  if(sr == 1){
+    sigma_r <- summary_fit["sigma_r", "mean"]
+  } else{
+    sigma_r <- 0
+  }
+  
+  if(mabs == 1){
+    cont_pred$m_zero <- apply(X = cont_pred[,c("foi_mean", "sens", "spec")], MARGIN = 1, 
+                              FUN = function(x){ total_pprev4(age1 = 4, 
+                                                              age2 = 10, foi = x[1],
+                                                              sigma_r = sigma_r,
+                                                              M = 0, sigma_m = 12, sens = x[2], spec = x[3])})
+    
+    sigma_m <- fit["sigma_m", "mean"]
+    
+  } else{
+    cont_pred$m_zero = 0
+    
+    sigma_m <- 12
+  }
+  
+  cont_pred$pprev_mean <- apply(X = cont_pred[,c("ages", "foi_mean", "m_zero", "sens", "spec")], MARGIN = 1, 
+                                FUN = function(x){ total_pprev4(age1 = x[1] -0.01, 
+                                                                age2 = x[1] + 0.01, foi = x[2],
+                                                                sigma_r = sigma_r,
+                                                                M = x[3], sigma_m = sigma_m, sens = x[4], spec = x[5])})
+  
+  
+  # plot
+  p <- ggplot(data = ppd, aes(x = AGE_MID, y = mean))+
+    geom_errorbar(aes(ymin = low_sero, ymax = high_sero), col = "blue", alpha = 0.4)+
+    geom_point(alpha = 0.4, col = "blue")+
+    geom_point(aes(y = seroprevalence), col = "red", alpha = 0.4)+
+    geom_errorbar(aes(ymin = ci_low, ymax = ci_upp), col = "red", alpha = 0.4)+
+    geom_line(data = cont_pred, aes(x = ages, y = pprev_mean), col = "lightblue")+
+    facet_wrap(~STUDY_COUNTRY)+
+    theme_minimal()
+  
+  print(p)
+}
+
+
+## special plot function for fitting spec
+
+plot_real5 <- function(data, fit, mabs, sr){
+  
+  n_datasets <- length(unique(data$STUDY_COUNTRY))
+  summary_fit <- rstan::summary(fit)$summary
+  fit <- as.data.frame((rstan::summary(fit))$summary)
+  
+  ppd <- as.data.frame(summary_fit[grep("seroprevalence", rownames(summary_fit)),])
+  ppd$N <- as.vector(t(N_CAMELS))
+  ppd <- ppd %>%
+    dplyr::filter(N>0)
+  ppd$STUDY_COUNTRY <- data$STUDY_COUNTRY #only works because of filter
+  ppd$AGE_MID <- data$AGE_MID 
+  
+  # merge fits and data
+  ppd <- merge(ppd, data)
+  ppd <- ppd %>% 
+    rename(low_sero = "2.5%", high_sero = "97.5%")
+  
+  # get continuous predicted prev
+  ages <- seq(0.01,20, by = 0.1)
+  foi_df <- as.data.frame(summary_fit[grep("foi", rownames(summary_fit)),])
+  foi_mean <- rep(unique(foi_df$mean), each = length(ages))
+  sens_df <- as.data.frame(summary_fit[grep("sens", rownames(summary_fit)),])
+  sens <- rep(sens_df["mean",], 10*length(ages))
+  spec <- rep(spec, each = length(ages))
+  STUDY_COUNTRY <- rep(unique(data$STUDY_COUNTRY), each = length(ages))
+  cont_pred <- data.frame(ages = rep(ages, n_datasets), STUDY_COUNTRY, foi_mean, sens, spec)
+  
+  if(sr == 1){
+    sigma_r <- summary_fit["sigma_r", "mean"]
+  } else{
+    sigma_r <- 0
+  }
+  
+  if(mabs == 1){
+    cont_pred$m_zero <- apply(X = cont_pred[,c("foi_mean", "sens", "spec")], MARGIN = 1, 
+                              FUN = function(x){ total_pprev4(age1 = 4, 
+                                                              age2 = 10, foi = x[1],
+                                                              sigma_r = sigma_r,
+                                                              M = 0, sigma_m = 12, sens = x[2], spec = x[3])})
+    
+    sigma_m <- fit["sigma_m", "mean"]
+    
+  } else{
+    cont_pred$m_zero = 0
+    
+    sigma_m <- 12
+  }
+  
+  cont_pred$pprev_mean <- apply(X = cont_pred[,c("ages", "foi_mean", "m_zero", "sens", "spec")], MARGIN = 1, 
+                                FUN = function(x){ total_pprev4(age1 = x[1] -0.01, 
+                                                                age2 = x[1] + 0.01, foi = x[2],
+                                                                sigma_r = sigma_r,
+                                                                M = x[3], sigma_m = sigma_m, sens = x[4], spec = x[5])})
+  
+  
+  # plot
+  p <- ggplot(data = ppd, aes(x = AGE_MID, y = mean))+
+    geom_errorbar(aes(ymin = low_sero, ymax = high_sero), col = "blue", alpha = 0.4)+
+    geom_point(alpha = 0.4, col = "blue")+
+    geom_point(aes(y = seroprevalence), col = "red", alpha = 0.4)+
+    geom_errorbar(aes(ymin = ci_low, ymax = ci_upp), col = "red", alpha = 0.4)+
+    geom_line(data = cont_pred, aes(x = ages, y = pprev_mean), col = "lightblue")+
+    facet_wrap(~STUDY_COUNTRY)+
+    theme_minimal()
+  
+  print(p)
+}
+
+plot_real5_studspec <- function(data, fit, mabs, sr){
+  
+  n_datasets <- length(unique(data$STUDY_COUNTRY))
+  summary_fit <- rstan::summary(fit)$summary
+  fit <- as.data.frame((rstan::summary(fit))$summary)
+  
+  ppd <- as.data.frame(summary_fit[grep("seroprevalence", rownames(summary_fit)),])
+  ppd$N <- as.vector(t(N_CAMELS))
+  ppd <- ppd %>%
+    dplyr::filter(N>0)
+  ppd$STUDY_COUNTRY <- data$STUDY_COUNTRY #only works because of filter
+  ppd$AGE_MID <- data$AGE_MID 
+  
+  # merge fits and data
+  ppd <- merge(ppd, data)
+  ppd <- ppd %>% 
+    rename(low_sero = "2.5%", high_sero = "97.5%")
+  
+  # get continuous predicted prev
+  ages <- seq(0.01,20, by = 0.1)
+  foi_df <- as.data.frame(summary_fit[grep("foi", rownames(summary_fit)),])
+  foi_mean <- rep(unique(foi_df$mean), each = length(ages))
+  sens_df <- as.data.frame(summary_fit[grep("foi", rownames(summary_fit)),])
+  sens_mean <- rep(unique(sens_df$mean), each = length(ages))
+  spec <- rep(spec, each = length(ages))
+  STUDY_COUNTRY <- rep(unique(data$STUDY_COUNTRY), each = length(ages))
+  cont_pred <- data.frame(ages = rep(ages, n_datasets), STUDY_COUNTRY, foi_mean, sens = sens_mean, spec)
+  
+  if(sr == 1){
+    sigma_r <- summary_fit["sigma_r", "mean"]
+  } else{
+    sigma_r <- 0
+  }
+  
+  if(mabs == 1){
+    cont_pred$m_zero <- apply(X = cont_pred[,c("foi_mean", "sens", "spec")], MARGIN = 1, 
+                              FUN = function(x){ total_pprev4(age1 = 4, 
+                                                              age2 = 10, foi = x[1],
+                                                              sigma_r = sigma_r,
+                                                              M = 0, sigma_m = 12, sens = x[2], spec = x[3])})
+    
+    sigma_m <- fit["sigma_m", "mean"]
+    
+  } else{
+    cont_pred$m_zero = 0
+    
+    sigma_m <- 12
+  }
+  
+  cont_pred$pprev_mean <- apply(X = cont_pred[,c("ages", "foi_mean", "m_zero", "sens", "spec")], MARGIN = 1, 
+                                FUN = function(x){ total_pprev4(age1 = x[1] -0.01, 
+                                                                age2 = x[1] + 0.01, foi = x[2],
+                                                                sigma_r = sigma_r,
+                                                                M = x[3], sigma_m = sigma_m, sens = x[4], spec = x[5])})
+  
+  
+  # plot
+  p <- ggplot(data = ppd, aes(x = AGE_MID, y = mean))+
+    geom_errorbar(aes(ymin = low_sero, ymax = high_sero), col = "blue", alpha = 0.4)+
+    geom_point(alpha = 0.4, col = "blue")+
+    geom_point(aes(y = seroprevalence), col = "red", alpha = 0.4)+
+    geom_errorbar(aes(ymin = ci_low, ymax = ci_upp), col = "red", alpha = 0.4)+
+    geom_line(data = cont_pred, aes(x = ages, y = pprev_mean), col = "lightblue")+
+    facet_wrap(~STUDY_COUNTRY)+
+    theme_minimal()
+  
+  print(p)
+}
+
+DICfunc <- function(fit){
+  
+  fits <- rstan::extract(fit)
+  ll <- fits$log_lik
+  ll <- rowSums(ll) #sum across all data sets and ages (zeros and NAs from ragged arrays shouldn't matter)
+  
+  # DIC calculations
+  D_bar <- -2*mean(ll) # mean deviance
+  idx_mode <- which.max(fits$lp__) # index at which logposterior is maximal
+  pD_mode <- D_bar - (-2*ll[idx_mode]) # should be approximately 1 which is the number of parameters in the model
+  ##pD_model1_mean <- D_bar_model1 - (-2*log_likelihood(dat, mean(mu_chain_sub))) # should be approximately 1 which is the number of parameters in the model
+  
+  DIC_mode <- D_bar + pD_mode
+  ##DIC_model1_mean <- D_bar_model1 + pD_model1_mean
+  return(list(D_bar = D_bar,
+              pD_mode = pD_mode,
+              DIC_mode = DIC_mode))
+  
 }

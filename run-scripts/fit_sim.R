@@ -73,7 +73,7 @@ fit_4_1 <- stan(
   verbose = TRUE
   ##control = list(adapt_delta = 0.99)
 )
-
+saveRDS(fit_4_1, "fits/fit_4_1.rds")
 
 fit_4_2 <- stan(
   file = here::here("stan-models/model4_reduced2b.stan"),
@@ -94,7 +94,7 @@ fit_4_2 <- stan(
   verbose = TRUE
   ##control = list(adapt_delta = 0.99) 
 )
-
+saveRDS(fit_4_2, "fits/fit_4_2.rds")
 
 fit_4_3 <- stan(
   file = here::here("stan-models/model4_reduced3b.stan"),
@@ -116,6 +116,7 @@ fit_4_3 <- stan(
   ##control = list(max_treedepth = 15)
   ##control = list(adapt_delta = 0.99)
 )
+saveRDS(fit_4_3, "fits/fit_4_3.rds")
 
 fit_4 <- stan(
   file = here::here("stan-models/model4b.stan"),
@@ -136,10 +137,53 @@ fit_4 <- stan(
   ##control = list(adapt_delta = 0.99)
 )
 
-saveRDS(fit_4_1, "fits/fit_4_1.rds")
-saveRDS(fit_4_2, "fits/fit_4_2.rds")
-saveRDS(fit_4_3, "fits/fit_4_3.rds")
 saveRDS(fit_4, "fits/fit_4.rds")
+
+## looking at mismatch of mgenerating and fitting model
+
+fit_4_sim1 <- stan(
+  file = here::here("stan-models/model4b.stan"),
+  data = list(
+    S = nrow(simk0[[1]][[1]]$simulated),
+    A =  ncol(simk0[[1]][[1]]$simulated),
+    N = N_CAMELS,
+    pos = simk0[[1]][[1]]$simulated,
+    age1 = LOW_AGE,
+    age2 = UPP_AGE,
+    sens = sens,
+    spec = spec, 
+    mabs = 1
+  ),
+  chains = 4,
+  iter = 4000,
+  verbose = TRUE
+  ##control = list(adapt_delta = 0.99)
+)
+
+saveRDS(fit_4_sim1, "fits/fit_4_sim1.rds")
+
+
+fit_1_sim4 <- stan(
+  file = here::here("stan-models/model4_reduced1b.stan"),
+  data = list(
+    S = nrow(simk0[[4]][[1]]$simulated),
+    A =  ncol(simk0[[4]][[1]]$simulated),
+    N = N_CAMELS,
+    pos = simk0[[4]][[1]]$simulated,
+    age1 = LOW_AGE,
+    age2 = UPP_AGE,
+    sigma_m = 2.1,
+    sigma_r = 0,
+    sens = sens,
+    spec = spec,
+    mabs = -1
+  ),
+  chains = 4,
+  iter = 4000,
+  verbose = TRUE
+  ##control = list(adapt_delta = 0.99)
+)
+saveRDS(fit_1_sim4, "fits/fit_1_sim4.rds")
 
 
 ##################
@@ -246,17 +290,17 @@ fit_4bb <- readRDS("fits/fit_4bb.rds")
 
 
 
-## with k = 0.1
+## with k = 0.05
 
 # run full model reduced to 1
 
 fit_4_1bb1 <- stan(
   file = here::here("stan-models/model4_reduced1bb.stan"),
   data = list(
-    S = nrow(simk01[[1]][[1]]$simulated),
-    A =  ncol(simk01[[1]][[1]]$simulated),
+    S = nrow(simk005[[1]][[1]]$simulated),
+    A =  ncol(simk005[[1]][[1]]$simulated),
     N = N_CAMELS,
-    pos = simk01[[1]][[1]]$simulated,
+    pos = simk005[[1]][[1]]$simulated,
     age1 = LOW_AGE,
     age2 = UPP_AGE,
     sigma_m = 2.1,
@@ -276,10 +320,10 @@ diagnos <- ggmcmc(ggs(fit_4_1bb1), here::here("diagnostics/1bb1.pdf"))
 fit_4_2bb1 <- stan(
   file = here::here("stan-models/model4_reduced2bb.stan"),
   data = list(
-    S = nrow(simk01[[2]][[1]]$simulated),
-    A =  ncol(simk01[[2]][[1]]$simulated),
+    S = nrow(simk005[[2]][[1]]$simulated),
+    A =  ncol(simk005[[2]][[1]]$simulated),
     N = N_CAMELS,
-    pos = simk01[[2]][[1]]$simulated,
+    pos = simk005[[2]][[1]]$simulated,
     age1 = LOW_AGE,
     age2 = UPP_AGE,
     sigma_m = 2.1,
@@ -298,10 +342,10 @@ diagnos <- ggmcmc(ggs(fit_4_2bb1), here::here("diagnostics/2bb1.pdf"))
 fit_4_3bb1 <- stan(
   file = here::here("stan-models/model4_reduced3bb.stan"),
   data = list(
-    S = nrow(simk01[[3]][[1]]$simulated),
-    A =  ncol(simk01[[3]][[1]]$simulated),
+    S = nrow(simk005[[3]][[1]]$simulated),
+    A =  ncol(simk005[[3]][[1]]$simulated),
     N = N_CAMELS,
-    pos = simk01[[3]][[1]]$simulated,
+    pos = simk005[[3]][[1]]$simulated,
     age1 = LOW_AGE,
     age2 = UPP_AGE,
     sigma_r = 0,
@@ -321,10 +365,10 @@ diagnos <- ggmcmc(ggs(fit_4_3bb1), here::here("diagnostics/3bb1.pdf"))
 fit_4bb1 <- stan(
   file = here::here("stan-models/model4bb.stan"),
   data = list(
-    S = nrow(simk01[[4]][[1]]$simulated),
-    A =  ncol(simk01[[4]][[1]]$simulated),
+    S = nrow(simk005[[4]][[1]]$simulated),
+    A =  ncol(simk005[[4]][[1]]$simulated),
     N = N_CAMELS,
-    pos = simk01[[4]][[1]]$simulated,
+    pos = simk005[[4]][[1]]$simulated,
     age1 = LOW_AGE,
     age2 = UPP_AGE,
     sens = sens,

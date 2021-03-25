@@ -19,7 +19,7 @@ parameters{
 }
 
 model{
-          k ~ beta(1,100); //prior for overdispersion
+          k ~ beta(1,200); //prior for overdispersion
   for(s in 1:S){
     for(a in 1:A){
       if(!is_inf(age1[s,a])){

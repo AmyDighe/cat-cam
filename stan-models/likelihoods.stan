@@ -204,3 +204,32 @@ return loglik;
     return loglik;
     }
 }
+
+          real model4av_bbtrans_lpmf(int seropos,
+                    int N,
+                    real foi,
+                    real age1,
+                    real age2,
+                    real sigma_r,
+                    real sigma_m,
+                    real gamma2,
+                    real sens, 
+                    real spec,
+                    real mabs
+                    ){
+                      
+            real obs_pred_prev;
+            real k;
+            real alpha;
+            real beta;    
+            real loglik;
+    
+    obs_pred_prev = seroprev(foi, sigma_r, sigma_m, mabs, age1, age2, sens, spec);
+    k = -log(gamma2);
+    alpha = ((1/k) - 1)* obs_pred_prev;
+    beta = ((1/k) - 1)* (1 - obs_pred_prev);
+    
+    loglik = beta_binomial_lpmf(seropos|N, alpha, beta);
+    
+    return loglik;
+    }

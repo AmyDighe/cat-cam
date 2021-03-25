@@ -6,7 +6,7 @@ data_raw <- read.csv("data/all_rna_and_serol_new.csv")
 # select columns of interest
 
 data_min <- data_raw%>%
-  dplyr::select(STUDY, COUNTRY, LOW_AGE, UPP_AGE, RNA_POS,
+  dplyr::select(STUDY, COUNTRY, LOW_AGE, UPP_AGE, N_AGE_2, RNA_POS,
                 RNA_N, SERO_POS, SERO_N, TEST_TYPE,
                 SAMPLE)
 
@@ -16,7 +16,8 @@ data_min <- data_raw%>%
 data_sero <- data_min %>%
   dplyr::filter(!is.na(SERO_POS))%>%
   dplyr::filter(SAMPLE != "targetted_epilink")%>%
-  #dplyr::filter(STUDY != "van_doremalen")%>%
+  #dplyr::filter(STUDY != "wernery_phylo")%>% #responded to camel infection
+  #dplyr::filter(N_AGE_2 == "N")%>%
   mutate(STUDY_COUNTRY = paste(COUNTRY, STUDY, sep ="_"))#%>%
   #dplyr::filter(STUDY_COUNTRY != "kandeil_Tunisia")
 

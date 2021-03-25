@@ -30,10 +30,8 @@ names(spec) <- names(sens)
 # fits
 data <- datak0[[1]]%>% dplyr::filter(rep == "pos1")
 data$seroprevalence <- data$pos/data$SERO_N
-data <- data %>%
-  dplyr::filter(SERO_N > 0)
 
-p1a <- plot_fit_sim(fits = fit_4_1, data, mabs = 0, sr = 0, sens, spec)
+p1a <- plot_sim_gq(fit = fit_4_1, data, mabs = 0, sr = 0)
 
 
 # parameter estimates
@@ -289,18 +287,17 @@ ggsave("figs/param_est4bb.png", plot = p4bb)
 ##############
 
 # fits
-data <- datak01[[1]]%>% dplyr::filter(rep == "pos1")
+data <- datak005[[1]]%>% dplyr::filter(rep == "pos1")
 data$seroprevalence <- data$pos/data$SERO_N
-data <- data %>%
-  dplyr::filter(SERO_N > 0)
 
-p1ab1 <- plot_fit_sim(fits = fit_4_1bb1, data, mabs = 0, sr = 0, sens, spec)
+
+p1ab1 <- plot_sim_gq(fit = fit_4_1bb1, data, mabs = 0, sr = 0)
 
 
 # parameter estimates
 posterior <- as.array(fit_4_1bb1)
-fit_4_1_df <- as.data.frame(fit_4_1bb1)
-true <- data.frame(params = names(fit_4_1_df)[1:(n_datasets + 1)], values = c(foi, 0.01))
+fit_4_1_df <- as.data.frame(fit_4_1bb1)[1:(n_datasets + 1)]
+true <- data.frame(params = names(fit_4_1_df)[1:(n_datasets + 1)], values = c(foi, 0.005))
 labs <- names(fit_4_1_df)[1:(n_datasets + 1)]
 color_scheme_set("red")
 
@@ -320,7 +317,7 @@ ggsave("figs/param_est1bb1.png", plot = p1bb1)
 ##############
 
 # fits
-data <- datak01[[2]]%>% dplyr::filter(rep == "pos1")
+data <- datak005[[2]]%>% dplyr::filter(rep == "pos1")
 data$seroprevalence <- data$pos/data$SERO_N
 data <- data %>%
   dplyr::filter(SERO_N > 0)
@@ -339,8 +336,8 @@ p2bb1 <- mcmc_intervals(posterior, pars = names(fit_4_2_df)[1:(n_datasets+2)])+
   scale_y_discrete(breaks=names(fit_4_2_df)[1:(n_datasets+2)],
                    labels=labs,
                    limits = rev)+
-  geom_point(data = true, aes(x = value, y = params))+
-  xlim(0,2.5)
+  geom_point(data = true, aes(x = value, y = params))#+
+  #xlim(0,2.5)
 
 
 ggsave("figs/fit2bb.png", plot = p2ab1)
@@ -352,7 +349,7 @@ ggsave("figs/param_est2bb.png", plot = p2bb1)
 
 
 # fits
-data <- datak01[[3]]%>% dplyr::filter(rep == "pos1")
+data <- datak005[[3]]%>% dplyr::filter(rep == "pos1")
 data$seroprevalence <- data$pos/data$SERO_N
 data <- data %>%
   dplyr::filter(SERO_N > 0)
@@ -384,7 +381,7 @@ ggsave("figs/param_est3bb1.png", plot = p3bb1)
 ##############
 
 # fits
-data <- datak01[[4]]%>% dplyr::filter(rep == "pos1")
+data <- datak005[[4]]%>% dplyr::filter(rep == "pos1")
 data$seroprevalence <- data$pos/data$SERO_N
 data <- data %>%
   dplyr::filter(SERO_N > 0)
@@ -402,8 +399,8 @@ p4bb1 <- mcmc_intervals(posterior, pars = names(fit_4_df)[1:(n_datasets+3)])+
   scale_y_discrete(breaks=names(fit_4_df)[1:(n_datasets+3)],
                    labels=labs,
                    limits = rev)+
-  geom_point(data = true, aes(x = value, y = params))+
-  xlim(0,2.5)
+  geom_point(data = true, aes(x = value, y = params))
+
 
 ggsave("figs/fit4bb1.png", plot = p4ab1)
 ggsave("figs/param_est4bb1.png", plot = p4bb1)

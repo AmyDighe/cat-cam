@@ -46,24 +46,24 @@ mabs <- c(0, 0, 1, 1)
 
 simk0 <- list()
 simk001 <- list()
-simk01 <- list()
+simk005 <- list()
 posk0 <- rep(list(list()), 4)
 posk001 <- rep(list(list()), 4)
-posk01 <- rep(list(list()), 4)
+posk005 <- rep(list(list()), 4)
 pprevk0 <- rep(list(list()), 4)
 pprevk001 <- rep(list(list()), 4)
-pprevk01 <- rep(list(list()), 4)
+pprevk005 <- rep(list(list()), 4)
 pmabk0 <- rep(list(list()), 4)
 pmabk001 <- rep(list(list()), 4)
-pmabk01 <- rep(list(list()), 4)
+pmabk005 <- rep(list(list()), 4)
 datak0 <- list()
 p0 <- list()
 datak001 <- list()
 p001 <- list()
-datak01 <- list()
+datak005 <- list()
 p01 <- list()
 datak0L <- list()
-datak01L <- list()
+datak005L <- list()
 datak001L <- list()
 # simulate 3 sets of datasets using each model 1:4, 
 # for 3 different values of overdispersion k
@@ -82,9 +82,9 @@ for(m in 1:4){
                                                   N_CAMELS, UPP_AGE, LOW_AGE, od = 0.01, sens, spec), 
                             simplify = FALSE)
   
-  simk01[[m]]<- replicate(3, sim_data_betabinom(n_datasets, n_ages,
+  simk005[[m]]<- replicate(3, sim_data_betabinom(n_datasets, n_ages,
                                                 gamma = foi, sigma = sigma[m], omega = omega, mabs = mabs[m],
-                                                N_CAMELS, UPP_AGE, LOW_AGE, od = 0.1, sens, spec), 
+                                                N_CAMELS, UPP_AGE, LOW_AGE, od = 0.05, sens, spec), 
                           simplify = FALSE)
 }
 
@@ -100,15 +100,15 @@ for(m in 1:4){
   for(k in 1:3){ 
     posk0[[m]][[k]] <- reshape2::melt(simk0[[m]][[k]]$simulated, value.name = paste("pos", k, sep = ""))
     posk001[[m]][[k]] <- reshape2::melt(simk001[[m]][[k]]$simulated, value.name = paste("pos", k, sep = ""))
-    posk01[[m]][[k]] <- reshape2::melt(simk01[[m]][[k]]$simulated, value.name = paste("pos", k, sep = ""))
+    posk005[[m]][[k]] <- reshape2::melt(simk005[[m]][[k]]$simulated, value.name = paste("pos", k, sep = ""))
     
     pprevk0[[m]] <- reshape2::melt(simk0[[m]][[1]]$obs_seroprev, value.name = "pprevtot")
     pprevk001[[m]] <- reshape2::melt(simk001[[m]][[1]]$obs_seroprev, value.name = "pprevtot")
-    pprevk01[[m]] <- reshape2::melt(simk01[[m]][[1]]$obs_seroprev, value.name = "pprevtot")
+    pprevk005[[m]] <- reshape2::melt(simk005[[m]][[1]]$obs_seroprev, value.name = "pprevtot")
     
     pmabk0[[m]] <- reshape2::melt(simk0[[m]][[1]]$pmAbs, value.name = "pmAbs")
     pmabk001[[m]] <- reshape2::melt(simk001[[m]][[1]]$pmAbs, value.name = "pmAbs")
-    pmabk01[[m]] <- reshape2::melt(simk01[[m]][[1]]$pmAbs, value.name = "pmAbs")
+    pmabk005[[m]] <- reshape2::melt(simk005[[m]][[1]]$pmAbs, value.name = "pmAbs")
   }
   
   datak0[[m]] <- Reduce(merge, list(l_N_CAMELS, l_LOW_AGE,
@@ -173,27 +173,27 @@ for(m in 1:4){
   
   # for k = 0.01
   
-  datak01[[m]] <- Reduce(merge, list(l_N_CAMELS, l_LOW_AGE,
+  datak005[[m]] <- Reduce(merge, list(l_N_CAMELS, l_LOW_AGE,
                                      l_UPP_AGE,
-                                     posk01[[m]][[1]],
-                                     posk01[[m]][[2]],
-                                     posk01[[m]][[3]],
-                                     pmabk01[[m]],
-                                     pprevk01[[m]])
+                                     posk005[[m]][[1]],
+                                     posk005[[m]][[2]],
+                                     posk005[[m]][[3]],
+                                     pmabk005[[m]],
+                                     pprevk005[[m]])
   )
-  datak01[[m]] <- datak01[[m]]%>%
+  datak005[[m]] <- datak005[[m]]%>%
     rename(STUDY_COUNTRY = Var1, age_class = Var2)%>%
     mutate(STUDY_COUNTRY = factor(STUDY_COUNTRY, levels = as.character(seq(1, n_datasets, by = 1))),
            AGE_MID = LOW_AGE + ((UPP_AGE - LOW_AGE)/2))
   
-  datak01[[m]] <- gather(datak01[[m]], "rep", "pos", pos1, pos2, pos3) 
-  datak01[[m]] <- datak01[[m]]%>%
+  datak005[[m]] <- gather(datak005[[m]], "rep", "pos", pos1, pos2, pos3) 
+  datak005[[m]] <- datak005[[m]]%>%
     mutate(
-      item = seq(1:(dim(datak01[[m]])[1])))
+      item = seq(1:(dim(datak005[[m]])[1])))
   
-  datak01L[[m]] <- gather(datak01[[m]], "bound", "age", LOW_AGE, UPP_AGE)
+  datak005L[[m]] <- gather(datak005[[m]], "bound", "age", LOW_AGE, UPP_AGE)
   
-  p01[[m]] <- ggplot(data = datak01L[[m]], aes(x = age, y = pprevtot, group = item, colour = STUDY_COUNTRY))+
+  p01[[m]] <- ggplot(data = datak005L[[m]], aes(x = age, y = pprevtot, group = item, colour = STUDY_COUNTRY))+
     geom_line(size = 2, alpha = 0.5)+
     geom_line(aes(x = AGE_MID, y = pos/SERO_N, group = interaction(STUDY_COUNTRY, rep), colour = STUDY_COUNTRY))+
     geom_point(aes(x = AGE_MID, y = pos/SERO_N, group = interaction(STUDY_COUNTRY, rep), colour = STUDY_COUNTRY))+
@@ -205,13 +205,13 @@ for(m in 1:4){
 # save simulated data
 saveRDS(datak0, file = "data/sim_datak0")
 saveRDS(datak001, file = "data/sim_datak001")
-saveRDS(datak01, file = "data/sim_datak01")
+saveRDS(datak005, file = "data/sim_datak005")
 saveRDS(simk0, file = "data/sim_matk0")
 saveRDS(simk001, file = "data/sim_matk001")
-saveRDS(simk01, file = "data/sim_matk01")
+saveRDS(simk005, file = "data/sim_matk005")
 # plot in a panel
 
-plegend <- ggplot(data = datak01L[[1]], aes(x = age, y = pprevtot, group = item, colour = STUDY_COUNTRY))+
+plegend <- ggplot(data = datak005L[[1]], aes(x = age, y = pprevtot, group = item, colour = STUDY_COUNTRY))+
   geom_line(size = 2, alpha = 0.5)+
   geom_line(aes(x = AGE_MID, y = pos/SERO_N, group = interaction(STUDY_COUNTRY, rep), colour = STUDY_COUNTRY))+
   geom_point(aes(x = AGE_MID, y = pos/SERO_N, group = interaction(STUDY_COUNTRY, rep), colour = STUDY_COUNTRY))
