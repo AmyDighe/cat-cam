@@ -805,3 +805,49 @@ DICfunc <- function(fit){
               DIC_mode = DIC_mode))
   
 }
+
+# people complained a lot about this... it doesn't appear in gelmans recent papers on DIC
+# https://rss.onlinelibrary.wiley.com/doi/full/10.1111/1467-9868.00353 
+# https://en.wikipedia.org/wiki/Deviance_information_criterion
+# http://www.stat.columbia.edu/~gelman/research/published/waic_understand3.pdf
+# https://statmodeling.stat.columbia.edu/2006/07/06/number_of_param/
+
+DICfunc_gelman1 <- function(fit){
+  
+  fits <- rstan::extract(fit)
+  ll <- fits$log_lik
+  ll <- rowSums(ll) #sum across all data sets and ages (zeros and NAs from ragged arrays shouldn't matter)
+  
+  # DIC calculations
+  D_bar <- -2*mean(ll) # mean deviance
+  pD <- 0.5*var(D_bar)
+  elpd <- D_bar - pD
+  
+  DIC <- -2 * elpd
+
+  return(list(D_bar = D_bar,
+              pD = pD,
+              elpd = elpd,
+              DIC = DIC))
+}
+
+DICfunc_gelman2 <- function(fit){
+  
+  fits <- rstan::extract(fit)
+  ll <- fits$log_lik
+  ll <- rowSums(ll) #sum across all data sets and ages (zeros and NAs from ragged arrays shouldn't matter)
+  
+  # need to calculate loglik at the mean (using moel specific function!) need function as an arguement in DIC function...
+  
+  # DIC calculations
+  D_hat <- mean(ll_hat) # deviance at the mean
+  pD <- 2*var(ll)
+  elpd <- D_hat - pD
+  
+  DIC <- -2 * elpd
+  
+  return(list(D_bar = D_bar,
+              pD = pD,
+              elpd = elpd,
+              DIC = DIC))
+}
